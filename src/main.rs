@@ -1,6 +1,6 @@
 extern crate clap;
 
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App, SubCommand, ArgMatches};
 
 fn main() {
     let matches = App::new("Staple Static Blog Generator")
@@ -25,7 +25,27 @@ fn main() {
                             .version("0.0.1"))
 
                         .get_matches();
-    
 
-    println!("Hello, world!");
+    dispatch(matches);
+}
+
+fn dispatch(matches: ArgMatches) -> Result<(), String> {
+    match matches.subcommand() {
+        ("init", Some(m)) => init_project(m),
+        ("new", Some(m)) => new_project(m),
+        ("build", Some(m)) => build_project(m),
+        _ => Ok(())
+    }
+}
+
+fn init_project(matches: &ArgMatches) -> Result<(), String> {
+    Ok(())
+}
+
+fn new_project(matches: &ArgMatches) -> Result<(), String> {
+    Ok(())
+}
+
+fn build_project(matches: &ArgMatches) -> Result<(), String> {
+    Ok(())
 }
