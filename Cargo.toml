@@ -4,6 +4,11 @@ description = "static blog generator"
 version = "0.1.0"
 authors = ["Kilerd Chan <blove694@gmail.com>"]
 license = "MIT"
+edition = "2018"
 
 [dependencies]
-clap = "^2.31"
+structopt = "0.3.3"
+file-lock = "1.1.20"
+tera = "0.11.20"
+serde = "1.0.101"
+serde_derive = "1.0.101"

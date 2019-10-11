@@ -1,51 +1,37 @@
-extern crate clap;
 
-use clap::{Arg, App, SubCommand, ArgMatches};
+use file_lock::FileLock;
+use structopt::StructOpt;
+use std::fs::File;
+use crate::article::Article;
+use crate::template::Template;
 
-fn main() {
-    let matches = App::new("Staple Static Blog Generator")
-                        .version("0.0.1")
-                        .author("Kilerd Chan <blove694@gmail.com>")
-                        .about("generating blog for you")
-                        .subcommand(SubCommand::with_name("init")
-                            .about("init staple project")
-                            .version("0.0.1")
-                            .arg(Arg::with_name("NAME")
-                                .required(true)
-                                .index(1)
-                                .help("the folder for staple")))
-                        .subcommand(SubCommand::with_name("new")
-                            .about("new article")
-                            .version("0.0.1")
-                            .arg(Arg::with_name("title")
-                                .short("t")
-                                .help("title for new article")))
-                        .subcommand(SubCommand::with_name("build")
-                            .about("generate html")
-                            .version("0.0.1"))
+mod article;
+mod template;
 
-                        .get_matches();
-
-    dispatch(matches);
+#[derive(StructOpt, Debug)]
+#[structopt(name="Staple")]
+enum StapleCommand {
+    Build
 }
 
-fn dispatch(matches: ArgMatches) -> Result<(), String> {
-    match matches.subcommand() {
-        ("init", Some(m)) => init_project(m),
-        ("new", Some(m)) => new_project(m),
-        ("build", Some(m)) => build_project(m),
-        _ => Ok(())
+impl StapleCommand {
+    pub fn run(self) {
+        match self {
+            StapleCommand::Build => {
+                let mut file_lock = match FileLock::lock("Staple.lock", true, true) {
+                    Ok(lock) => lock,
+                    Err(err) => panic!("Error getting write lock: {}", err),
+                };
+                let articles = Article::load_all_article();
+                let template = Template::new("rubble".to_string());
+                template.render(articles);
+                println!("build successfully");
+            }
+        }
     }
 }
 
-fn init_project(matches: &ArgMatches) -> Result<(), String> {
-    Ok(())
-}
-
-fn new_project(matches: &ArgMatches) -> Result<(), String> {
-    Ok(())
-}
-
-fn build_project(matches: &ArgMatches) -> Result<(), String> {
-    Ok(())
+fn main() {
+    let opt:StapleCommand = StapleCommand::from_args();
+    opt.run();
 }
