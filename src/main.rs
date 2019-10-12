@@ -4,6 +4,7 @@ use structopt::StructOpt;
 use std::fs::File;
 use crate::article::Article;
 use crate::template::Template;
+use std::process::exit;
 
 mod article;
 mod template;
@@ -25,8 +26,17 @@ impl StapleCommand {
                 };
                 let articles = Article::load_all_article();
                 let template = Template::new("rubble".to_string());
-                template.render(articles);
-                println!("build successfully");
+                let result = template.render(articles);
+                match result {
+                    Ok(_) => {
+                        println!("build successfully");
+                    },
+                    Err(e) => {
+                        dbg!(e);
+                        exit(-1);
+                    }
+                }
+
             }
         }
     }
