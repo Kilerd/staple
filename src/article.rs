@@ -1,7 +1,7 @@
 use std::sync::Arc;
-use serde_derive::Serialize;
+use serde_derive::{Serialize, Deserialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Article {
     pub url: String
 }

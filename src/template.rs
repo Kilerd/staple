@@ -18,10 +18,10 @@ impl Template {
 
     pub fn render(self, articles: Vec<Article>) -> Result<(), StapleError> {
         std::fs::remove_dir_all(".render").or_else(|e|if e.kind() != ErrorKind::NotFound { Err(StapleError::IoError(e)) } else {Ok(())})?;
-        std::fs::create_dir(".render").expect("cannot create .render folder");
+        std::fs::create_dir(".render").map_err(|e| StapleError::IoError(e))?;
         // index
-        let result = self.tera.render("index.html", &Context::new()).expect("cannot found index.html");
-        let mut result1 = File::create(".render/index.html").expect("cannot open render file");
+        let result = self.tera.render("index.html", &Context::new()).map_err(|e| StapleError::RenderError(e))?;
+        let mut result1 = File::create(".render/index.html").map_err(|e| StapleError::IoError(e))?;
         result1.write_all(result.as_bytes());
 
         // article
