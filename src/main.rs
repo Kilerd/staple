@@ -7,6 +7,7 @@ use crate::template::Template;
 
 mod article;
 mod template;
+mod error;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name="Staple")]

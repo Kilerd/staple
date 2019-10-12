@@ -3,6 +3,7 @@ use tera::{compile_templates, Context, Tera};
 use crate::article::Article;
 use std::fs::File;
 use std::io::{Write, ErrorKind};
+use crate::error::StapleError;
 
 pub struct Template {
     name: String,
@@ -15,8 +16,8 @@ impl Template {
         Template { name, tera }
     }
 
-    pub fn render(self, articles: Vec<Article>) {
-        std::fs::remove_dir_all(".render").expect("cannot remove .render folder");
+    pub fn render(self, articles: Vec<Article>) -> Result<(), StapleError> {
+        std::fs::remove_dir_all(".render").or_else(|e|if e.kind() != ErrorKind::NotFound { Err(StapleError::IoError(e)) } else {Ok(())})?;
         std::fs::create_dir(".render").expect("cannot create .render folder");
         // index
         let result = self.tera.render("index.html", &Context::new()).expect("cannot found index.html");
@@ -41,5 +42,6 @@ impl Template {
             }
         }
         std::fs::rename(".render", "public");
+        Ok(())
     }
 }

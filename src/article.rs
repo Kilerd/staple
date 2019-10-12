@@ -14,6 +14,7 @@ impl Article {
             Article{ url: "1".to_string() },
             Article{ url: "2".to_string() },
             Article{ url: "3".to_string() },
+            Article{ url: "4".to_string() },
         ];
     }
 }
