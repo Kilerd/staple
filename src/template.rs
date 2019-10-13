@@ -18,14 +18,14 @@ impl Template {
 
     pub fn render(self, articles: Vec<Article>) -> Result<(), StapleError> {
         std::fs::remove_dir_all(".render").or_else(|e|if e.kind() != ErrorKind::NotFound { Err(StapleError::IoError(e)) } else {Ok(())})?;
-        std::fs::create_dir(".render").map_err(|e| StapleError::IoError(e))?;
+        std::fs::create_dir(".render")?;
         // index
-        let result = self.tera.render("index.html", &Context::new()).map_err(|e| StapleError::RenderError(e))?;
-        let mut result1 = File::create(".render/index.html").map_err(|e| StapleError::IoError(e))?;
+        let result = self.tera.render("index.html", &Context::new())?;
+        let mut result1 = File::create(".render/index.html")?;
         result1.write_all(result.as_bytes());
 
         // article
-        std::fs::create_dir(".render/articles").expect("cannot create .render/articles folder");
+        std::fs::create_dir(".render/articles")?;
 
         articles.into_iter().for_each(|article| {
             let mut context = Context::new();

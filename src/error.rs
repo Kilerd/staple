@@ -1,8 +1,16 @@
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum StapleError {
+    #[error("cannot operate folder .render")]
     CanNotOperateDotRenderFolder,
-    IoError(std::io::Error),
-    ConfigError(toml::de::Error),
-    RenderError(tera::Error)
+
+    #[error("io error {:?} {}", .0.kind() ,.0.to_string())]
+    IoError(#[from] std::io::Error),
+
+    #[error("config error {}", .0.to_string())]
+    ConfigError(#[from] toml::de::Error),
+
+    #[error("render error {}", .0.to_string())]
+    RenderError(#[from] tera::Error),
 }

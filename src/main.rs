@@ -44,20 +44,7 @@ fn main() {
             println!("successfully");
         }
         Err(e) => {
-            match e {
-                StapleError::CanNotOperateDotRenderFolder => {
-                    panic!(" 无法操作零时文件夹 .render");
-                }
-                StapleError::IoError(e) => {
-                    panic!("{}", e.to_string());
-                }
-                StapleError::ConfigError(e) => {
-                    panic!("{}", e.to_string());
-                }
-                StapleError::RenderError(e) => {
-                    panic!("{}", e.to_string());
-                }
-            }
+            eprintln!("{}", dbg!(e));
         }
     }
 }
