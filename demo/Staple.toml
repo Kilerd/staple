@@ -1,8 +1,19 @@
-[base]
+[site]
 title = ""
+subtitle = ""
 description = ""
-url = ""
+keywords = []
 author = ""
 email = ""
+utc_offset = +800
+theme = "rubble"
+
+[url]
+url = ""
+root = ""
+permalink = "{year}/{month}/{day}/{title}.html"
+
+[pagination]
+page_size = 10
 
 [extra]
