@@ -15,7 +15,8 @@ jobs:
       run: cargo test --verbose
     - name: build demo
       run: cd demo && cargo run -- build
-    - name: publish to github page
-      uses: maxheld83/ghpages@v0.2.1
-      env:
-        BUILD_DIR: demo/public
+    - name: Deploy site to gh-pages branch
+      uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
+      with:
+        site-directory: demo/public
+        repo-token: ${{ secrets.GH_PAT }}
