@@ -5,7 +5,6 @@ use std::io::{ErrorKind, Read};
 use serde_derive::{Deserialize, Serialize};
 use toml::Value;
 
-
 use crate::error::StapleError;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,7 +18,7 @@ impl Config {
         let mut file = File::open("Staple.toml")?;
         let mut string = String::new();
         file.read_to_string(&mut string)?;
-        toml::from_str(&string).map_err(|e|StapleError::ConfigError(e))
+        toml::from_str(&string).map_err(|e| StapleError::ConfigError(e))
     }
 }
 

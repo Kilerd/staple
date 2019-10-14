@@ -1,25 +1,23 @@
-
-use file_lock::FileLock;
-use structopt::StructOpt;
-use std::fs::File;
-use crate::article::Article;
-use crate::template::Template;
-use std::process::exit;
 use crate::app::App;
+use crate::article::Article;
 use crate::error::StapleError;
+use crate::template::Template;
+use file_lock::FileLock;
+use std::fs::File;
+use std::process::exit;
+use structopt::StructOpt;
 
-mod article;
-mod template;
-mod error;
 mod app;
+mod article;
 mod config;
+mod error;
+mod template;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name="Staple")]
+#[structopt(name = "Staple")]
 enum StapleCommand {
-    Build
+    Build,
 }
-
 
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
@@ -37,7 +35,7 @@ impl StapleCommand {
 }
 
 fn main() {
-    let opt:StapleCommand = StapleCommand::from_args();
+    let opt: StapleCommand = StapleCommand::from_args();
     let result = opt.run();
     match result {
         Ok(_) => {
@@ -45,6 +43,7 @@ fn main() {
         }
         Err(e) => {
             eprintln!("{}", dbg!(e));
+            exit(-1);
         }
     }
 }

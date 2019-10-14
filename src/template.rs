@@ -1,9 +1,9 @@
 use tera::{compile_templates, Context, Tera};
 
 use crate::article::Article;
-use std::fs::File;
-use std::io::{Write, ErrorKind};
 use crate::error::StapleError;
+use std::fs::File;
+use std::io::{ErrorKind, Write};
 
 pub struct Template {
     name: String,
@@ -17,7 +17,13 @@ impl Template {
     }
 
     pub fn render(self, articles: Vec<Article>) -> Result<(), StapleError> {
-        std::fs::remove_dir_all(".render").or_else(|e|if e.kind() != ErrorKind::NotFound { Err(StapleError::IoError(e)) } else {Ok(())})?;
+        std::fs::remove_dir_all(".render").or_else(|e| {
+            if e.kind() != ErrorKind::NotFound {
+                Err(StapleError::IoError(e))
+            } else {
+                Ok(())
+            }
+        })?;
         std::fs::create_dir(".render")?;
         // index
         let result = self.tera.render("index.html", &Context::new())?;
@@ -30,8 +36,12 @@ impl Template {
         articles.into_iter().for_each(|article| {
             let mut context = Context::new();
             context.insert("article", &article);
-            let result = self.tera.render("article.html", &context).expect("cannot found article.html");
-            let mut result1 = File::create(format!(".render/articles/{}.html", article.url)).expect("cannot open render file");
+            let result = self
+                .tera
+                .render("article.html", &context)
+                .expect("cannot found article.html");
+            let mut result1 = File::create(format!(".render/articles/{}.html", article.url))
+                .expect("cannot open render file");
             result1.write_all(result.as_bytes());
         });
 
