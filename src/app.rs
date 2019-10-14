@@ -18,7 +18,6 @@ impl App {
     }
     pub fn render(self) -> Result<(), StapleError> {
         let articles = Article::load_all_article();
-        let template = Template::new("rubble".to_string());
-        template.render(articles)
+        self.template.render(articles, &self.config)
     }
 }

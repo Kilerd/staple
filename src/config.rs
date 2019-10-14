@@ -9,7 +9,7 @@ use toml::Value;
 use crate::error::StapleError;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Config {
+pub struct Config {
     pub site: Site,
     pub url: Url,
     pub pagination: Pagination,
