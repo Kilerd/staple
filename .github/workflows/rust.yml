@@ -1,0 +1,21 @@
+name: Rust
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+    - name: into demo folder
+      run: cd demo
+    - name: build demo
+      run: cargo run -- build
+    - name: publish to github page
+      uses: maxheld83/ghpages@v0.2.1
