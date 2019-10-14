@@ -5,6 +5,8 @@ use crate::error::StapleError;
 use std::fs::File;
 use std::io::{ErrorKind, Write};
 
+
+#[derive(Debug)]
 pub struct Template {
     name: String,
     tera: Tera,

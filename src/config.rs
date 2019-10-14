@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{ErrorKind, Read};
+use std::path::Path;
 
 use serde_derive::{Deserialize, Serialize};
 use toml::Value;
-
 
 use crate::error::StapleError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Config {
-    site: Site,
-    url: Url,
-    pagination: Pagination,
-    extra: HashMap<String, Value>,
+    pub site: Site,
+    pub url: Url,
+    pub pagination: Pagination,
+    pub extra: HashMap<String, Value>,
 }
 
 impl Config {
@@ -21,20 +21,30 @@ impl Config {
         let mut file = File::open("Staple.toml")?;
         let mut string = String::new();
         file.read_to_string(&mut string)?;
-        toml::from_str(&string).map_err(|e|StapleError::ConfigError(e))
+        toml::from_str(&string).map_err(|e| StapleError::ConfigError(e))
+    }
+
+    pub fn get_theme(&self) -> Result<String, StapleError> {
+        let empty_theme = self.site.theme.eq("");
+        let theme_exist = !Path::new("templates").join(self.site.theme.clone()).exists();
+        if empty_theme || theme_exist {
+            Err(StapleError::ThemeNotFound(self.site.theme.clone()))
+        } else {
+            Ok(self.site.theme.clone())
+        }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Site {
-    title: String,
-    subtitle: String,
-    description: String,
-    keywords: Vec<String>,
-    author: String,
-    email: String,
-    utc_offset: i16,
-    theme: String
+    pub title: String,
+    pub subtitle: String,
+    pub description: String,
+    pub keywords: Vec<String>,
+    pub author: String,
+    pub email: String,
+    pub utc_offset: i16,
+    pub theme: String,
 }
 
 impl Default for Site {
@@ -47,16 +57,16 @@ impl Default for Site {
             author: "".to_string(),
             email: "".to_string(),
             utc_offset: 800,
-            theme: "rubble".to_string()
+            theme: "rubble".to_string(),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Url {
-    url: String,
-    root: String,
-    permalink: String,
+    pub url: String,
+    pub root: String,
+    pub permalink: String,
 }
 
 impl Default for Url {
@@ -64,14 +74,14 @@ impl Default for Url {
         Self {
             url: "localhost".to_string(),
             root: "/".to_string(),
-            permalink: "{year}/{month}/{day}/{title}.html".to_string()
+            permalink: "{year}/{month}/{day}/{title}.html".to_string(),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pagination {
-    page_size: u32,
+    pub page_size: u32,
 }
 
 impl Default for Pagination {
