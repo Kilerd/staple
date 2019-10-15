@@ -29,9 +29,9 @@ impl Template {
         self.render_index()?;
 
         // article
-        self.render_article(&articles);
+        self.render_article(&articles)?;
 
-        Template::remove_folder(".render")?;
+        Template::remove_folder("public")?;
         std::fs::rename(".render", "public");
 
         Ok(())
@@ -49,7 +49,9 @@ impl Template {
     pub fn render_index(&self) -> Result<(), StapleError> {
         let result = self.tera.render("index.html", &Context::new())?;
         let mut result1 = File::create(".render/index.html")?;
-        result1.write_all(result.as_bytes()).map_err(StapleError::IoError)
+        result1
+            .write_all(result.as_bytes())
+            .map_err(StapleError::IoError)
     }
 
     pub fn render_article(&self, articles: &Vec<Article>) -> Result<(), StapleError> {
