@@ -6,12 +6,18 @@ use file_lock::FileLock;
 use std::fs::File;
 use std::process::exit;
 use structopt::StructOpt;
+use lalrpop_util::lalrpop_mod;
 
 mod app;
 mod article;
 mod config;
 mod error;
 mod template;
+
+lalrpop_mod!(
+    #[allow(clippy::all)]
+    article_parser
+);
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
@@ -46,4 +52,7 @@ fn main() {
             exit(-1);
         }
     }
+//
+//    let result = article_parser::TermParser::new().parse("123fsdfs");
+//    dbg!(result);
 }
