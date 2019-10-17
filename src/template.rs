@@ -23,7 +23,6 @@ impl Template {
 
     pub fn render(self, articles: Vec<Article>, config: &Config) -> Result<(), StapleError> {
         Template::remove_folder(".render")?;
-
         std::fs::create_dir(".render")?;
         // index
         self.render_index()?;

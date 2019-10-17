@@ -18,6 +18,7 @@ pub struct Config {
 
 impl Config {
     pub fn load_from_file() -> Result<Self, StapleError> {
+        debug!("load config file");
         let mut file = File::open("Staple.toml")?;
         let mut string = String::new();
         file.read_to_string(&mut string)?;
@@ -26,7 +27,9 @@ impl Config {
 
     pub fn get_theme(&self) -> Result<String, StapleError> {
         let empty_theme = self.site.theme.eq("");
-        let theme_exist = !Path::new("templates").join(self.site.theme.clone()).exists();
+        let theme_exist = !Path::new("templates")
+            .join(self.site.theme.clone())
+            .exists();
         if empty_theme || theme_exist {
             Err(StapleError::ThemeNotFound(self.site.theme.clone()))
         } else {
@@ -86,9 +89,6 @@ pub struct Pagination {
 
 impl Default for Pagination {
     fn default() -> Self {
-        Self {
-            page_size: 10
-        }
+        Self { page_size: 10 }
     }
 }
-
