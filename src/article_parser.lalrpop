@@ -1,18 +1,27 @@
 use std::str::FromStr;
-
+use crate::ast;
 grammar;
 
-match {
-    r"[0-9]+"
-} else {
-    r"\w+",
-    _
+pub Article: ast::Article =  {
+    <meta:Meta> <content: Content> => ast::Article { meta, content}
 }
 
-pub Term = {
-    Num,
-    "(" <Term> ")",
-    r"\w+"
+pub Meta: Vec<(String, String)> = {
+    "\n"* <(<InlineMeta> "\n"+)*>
+}
+
+pub InlineMeta: (String, String) = {
+    " "* "-" " "* <InlineKey> " "* "=" " "* <InlineValue>
+}
+
+pub InlineKey: String = {
+  <s:r#"[^\n]+"#> => s.to_string()
+  };
+
+pub InlineValue: String = {
+<s:r#"[^\n]+"#> => s.to_string()
 };
 
-Num = r"[0-9]+";
+pub Content: String = {
+    <s:"123456"> => s.to_string()
+}

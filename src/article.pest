@@ -1,0 +1,14 @@
+//
+// Created by intellij-pest on 2019-10-17
+// article
+// Author: Kilerd
+//
+article = {SOI ~ meta ~ content ~ EOI}
+
+meta = { "\n"* ~ (inlineMeta ~ "\n"+)+ }
+
+inlineMeta = { " "* ~ "-" ~ " "* ~ inlineKey ~  " "* ~ "=" ~ " "* ~ inlineValue }
+
+inlineKey = { (!("\n" | " " | "=") ~ ANY)+ }
+inlineValue = { (!("\n") ~ ANY)+ }
+content = { ANY* }
