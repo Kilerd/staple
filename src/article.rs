@@ -19,11 +19,14 @@ pub struct Article {
     pub date: DateTime<FixedOffset>,
     pub raw_content: String,
     pub markdown: String,
+    pub extra: HashMap<String, String>,
 }
 
 impl Article {
     pub fn load_all_article() -> Result<Vec<Article>, StapleError> {
-        Ok(vec![ Article::load("articles/test.md")?])
+        let mut articles = vec![Article::load("articles/test.md")?];
+        articles.sort_by(|one, other| one.date.cmp(&other.date));
+        Ok(articles)
     }
 
     pub fn load(file: &str) -> Result<Article, StapleError> {
@@ -54,29 +57,28 @@ impl Article {
 
         dbg!(&metas);
 
-
-        let title = metas.get("title").ok_or(StapleError::ArticleError {
+        let title = metas.remove("title").ok_or(StapleError::ArticleError {
             filename: file.to_string(),
             reason: "title does not exist in article's metadata".to_string(),
         })?;
-        let url = metas.get("url").ok_or(StapleError::ArticleError {
+        let url = metas.remove("url").ok_or(StapleError::ArticleError {
             filename: file.to_string(),
             reason: "url does not exist in article's metadata".to_string(),
         })?;
         let tags: Vec<String> = metas
-            .get("tags")
-            .map(|raw| raw.to_string().split(",").map(|e| e.trim().to_string()).collect())
+            .remove("tags")
+            .map(|raw| raw.split(",").map(|e| e.trim().to_string()).collect())
             .ok_or(StapleError::ArticleError {
                 filename: file.to_string(),
                 reason: "tags does not exist in article's metadata".to_string(),
             })?;
         let option_date = metas
-            .get("datetime")
+            .remove("datetime")
             .ok_or(StapleError::ArticleError {
                 filename: file.to_string(),
                 reason: "datetime does not exist in article's metadata".to_string(),
             })
-            .map(|raw| DateTime::parse_from_str(raw, "%Y-%m-%d %H:%M:%S %z"))?
+            .map(|raw| DateTime::parse_from_str(&raw, "%Y-%m-%d %H:%M:%S %z"))?
             .map_err(|e| StapleError::ArticleError {
                 filename: file.to_string(),
                 reason: format!("parse date error {}", e),
@@ -87,6 +89,7 @@ impl Article {
             url: url.to_string(),
             tags,
             date: option_date,
+            extra: metas,
             raw_content: content,
             markdown: "".to_string(),
         }))
