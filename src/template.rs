@@ -28,7 +28,7 @@ impl Template {
         self.render_index(config, &articles)?;
 
         // article
-        self.render_article(&articles)?;
+        self.render_article(config, &articles)?;
 
         Template::remove_folder("public")?;
         std::fs::rename(".render", "public");
@@ -57,15 +57,23 @@ impl Template {
         std::fs::write(".render/index.html", result.as_bytes()).map_err(StapleError::IoError)
     }
 
-    pub fn render_article(&self, articles: &Vec<Article>) -> Result<(), StapleError> {
+    pub fn render_article(
+        &self,
+        config: &Config,
+        articles: &Vec<Article>,
+    ) -> Result<(), StapleError> {
         std::fs::create_dir(".render/articles")?;
 
         for article in articles {
             let mut context = Context::new();
             context.insert("article", article);
+            context.insert("config", config);
             let result = self.tera.render("article.html", &context)?;
-            let mut result1 = File::create(format!(".render/articles/{}.html", article.url))?;
-            result1.write_all(result.as_bytes())?;
+
+            std::fs::write(
+                format!(".render/articles/{}.html", article.url),
+                result.as_bytes(),
+            )?;
         }
         Ok(())
     }

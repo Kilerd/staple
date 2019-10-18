@@ -6,6 +6,7 @@ use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::error::StapleError;
+use std::path::Path;
 
 #[derive(Parser)]
 #[grammar = "article.pest"] // relative to src
@@ -24,14 +25,22 @@ pub struct Article {
 
 impl Article {
     pub fn load_all_article() -> Result<Vec<Article>, StapleError> {
-        let mut articles = vec![Article::load("articles/test.md")?];
-        articles.sort_by(|one, other| one.date.cmp(&other.date));
+        let path = Path::new("articles");
+        let mut articles = vec![];
+
+        for path in path.read_dir()? {
+            if let Ok(p) = path {
+                articles.push(Article::load(dbg!(p.path().to_str().unwrap()))?)
+            }
+        }
+        articles.sort_by(|one, other| other.date.cmp(&one.date));
+        dbg!(&articles);
         Ok(articles)
     }
 
     pub fn load(file: &str) -> Result<Article, StapleError> {
         debug!("load article {}", &file);
-        let string = std::fs::read_to_string("articles/test.md")?;
+        let string = std::fs::read_to_string(file)?;
         let mut metas: HashMap<String, String> = HashMap::new();
         let mut content = String::new();
 
