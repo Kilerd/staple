@@ -1,7 +1,8 @@
 #[macro_use]
 extern crate pest_derive;
 
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -18,6 +19,8 @@ use crate::app::App;
 use crate::article::Article;
 use crate::error::StapleError;
 use crate::template::Template;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use std::time::Duration;
 
 mod app;
 mod article;
@@ -29,6 +32,7 @@ mod template;
 #[structopt(name = "Staple")]
 enum StapleCommand {
     Build,
+    Develop,
 }
 
 impl StapleCommand {
@@ -42,12 +46,32 @@ impl StapleCommand {
 
                 App::load()?.render()
             }
+            StapleCommand::Develop => {
+                let (tx, rx) = std::sync::mpsc::channel();
+                let mut result: RecommendedWatcher =
+                    Watcher::new(tx, Duration::from_secs(1)).expect("cannot watch");
+                result
+                    .watch("articles", RecursiveMode::Recursive)
+                    .expect("cannot watch articles");
+                result
+                    .watch("templates", RecursiveMode::Recursive)
+                    .expect("cannot watch articles");
+
+                loop {
+                    match rx.recv() {
+                        Ok(event) => {
+                            println!("{:?}", event);
+                            App::load()?.render();
+                        }
+                        Err(e) => println!("watch error: {:?}", e),
+                    }
+                }
+            }
         }
     }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-
     pretty_env_logger::init_timed();
 
     let opt: StapleCommand = StapleCommand::from_args();
