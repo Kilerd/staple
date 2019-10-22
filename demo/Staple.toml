@@ -6,7 +6,7 @@ keywords = []
 author = ""
 email = ""
 utc_offset = +800
-theme = "rubble"
+theme = "staple"
 
 [url]
 url = ""
