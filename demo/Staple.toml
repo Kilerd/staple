@@ -17,3 +17,4 @@ permalink = "{year}/{month}/{day}/{title}.html"
 page_size = 10
 
 [extra]
+version = "0.1.0"

@@ -56,6 +56,9 @@ impl StapleCommand {
                 result
                     .watch("templates", RecursiveMode::Recursive)
                     .expect("cannot watch articles");
+                result
+                    .watch("Staple.toml", RecursiveMode::Recursive)
+                    .expect("cannot watch articles");
 
                 loop {
                     match rx.recv() {
