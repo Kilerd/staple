@@ -7,15 +7,56 @@
     <title>Staple</title>
 </head>
 <body>
-    <div>
-        <h1 class="title">Staple</h1>
-        <p class="description">简化你的博客之旅. <span>0.1.0</span></p>
-        <br>
-        <nav>
-            <a href="archive.html">Archives</a>
-            <a href="Changelog.html">Changelog</a>
-            <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
-        </nav>
-    </div>
+<div>
+    <h1 class="title">Staple<span>0.1.0</span></h1>
+    <p class="description">简化你的博客之旅. </p>
+    <br>
+    <nav>
+        <a href="archive.html">Archives</a>
+        <a href="Changelog.html">Changelog</a>
+        <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
+    </nav>
+
+
+    <nav>
+        
+
+        <a href="/articles/hello.html">hello</a>
+        
+
+        <a href="/articles/test-markdown-file.html">hello</a>
+        
+    </nav>
+
+</div>
 </body>
+<script>
+
+    function websocket_connect() {
+        let webSocket = new WebSocket("ws://localhost:8000/notifier");
+        webSocket.onopen = function () {
+            webSocket.send("Connecting...");
+            console.log("ws connection...");
+        };
+        webSocket.onmessage = function (event) {
+            let data = event.data;
+            console.log("ws get event: ", data);
+            if (data === "refresh") {
+                window.location.reload();
+            }
+        };
+        webSocket.onclose = function (e) {
+            console.log("ws disconnected.", e);
+            console.log("trying to reconnect servere 5 second later");
+            setTimeout(websocket_connect, 5000);
+        };
+    }
+
+    if ("WebSocket" in window) {
+        websocket_connect();
+
+    } else {
+        console.log("your browser does not support websocket");
+    }
+</script>
 </html>
