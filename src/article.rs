@@ -30,11 +30,10 @@ impl Article {
 
         for path in path.read_dir()? {
             if let Ok(p) = path {
-                articles.push(Article::load(dbg!(p.path().to_str().unwrap()))?)
+                articles.push(Article::load(p.path().to_str().unwrap())?)
             }
         }
         articles.sort_by(|one, other| other.date.cmp(&one.date));
-        dbg!(&articles);
         Ok(articles)
     }
 
@@ -64,8 +63,6 @@ impl Article {
             }
         }
 
-        dbg!(&metas);
-
         let title = metas.remove("title").ok_or(StapleError::ArticleError {
             filename: file.to_string(),
             reason: "title does not exist in article's metadata".to_string(),
@@ -93,7 +90,7 @@ impl Article {
                 reason: format!("parse date error {}", e),
             })?;
 
-        Ok(dbg!(Article {
+        Ok(Article {
             title: title.to_string(),
             url: url.to_string(),
             tags,
@@ -101,6 +98,6 @@ impl Article {
             extra: metas,
             raw_content: content,
             markdown: "".to_string(),
-        }))
+        })
     }
 }

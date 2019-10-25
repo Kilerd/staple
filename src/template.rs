@@ -8,6 +8,7 @@ use tera::{compile_templates, Context, Tera};
 use crate::article::Article;
 use crate::config::Config;
 use crate::error::StapleError;
+use fs_extra::dir::CopyOptions;
 
 #[derive(Debug)]
 pub struct Template {
@@ -26,19 +27,29 @@ impl Template {
         std::fs::create_dir(".render")?;
         // index
         self.render_index(config, &articles)?;
-
         // article
         self.render_article(config, &articles)?;
 
-        Template::remove_folder("public")?;
-        std::fs::rename(".render", "public");
+        self.copy_statics_folder(config);
 
+        Template::remove_folder("public")?;
+        std::fs::rename(".render", "public")?;
+        Ok(())
+    }
+
+    fn copy_statics_folder(&self, config: &Config) -> Result<(), StapleError> {
+        let statics_folder = format!("templates/{}/statics", config.site.theme);
+        if Path::new(&statics_folder).exists() {
+            debug!("statics folder exist, copy to render folder");
+            fs_extra::dir::copy(statics_folder, ".render", &CopyOptions::new())?;
+        }
         Ok(())
     }
 
     pub fn remove_folder(path: &str) -> Result<(), StapleError> {
         let path1 = Path::new(path);
         if path1.exists() {
+            debug!("remote folder {}", path);
             std::fs::remove_dir_all(path1).map_err(StapleError::IoError)
         } else {
             Ok(())
