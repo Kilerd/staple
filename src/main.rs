@@ -32,6 +32,7 @@ mod article;
 mod command;
 mod config;
 mod error;
+mod server;
 mod template;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

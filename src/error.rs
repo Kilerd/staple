@@ -2,6 +2,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum StapleError {
+    #[error("`Staple.toml` does not exist, try to run `staple init` before.")]
+    ConfigNotFound,
+
     #[error("cannot operate folder .render")]
     CanNotOperateDotRenderFolder,
 
