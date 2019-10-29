@@ -5,9 +5,6 @@ pub enum StapleError {
     #[error("`Staple.toml` does not exist, try to run `staple init` before.")]
     ConfigNotFound,
 
-    #[error("cannot operate folder .render")]
-    CanNotOperateDotRenderFolder,
-
     #[error("io error {:?} {}", .0.kind(), .0.to_string())]
     IoError(#[from] std::io::Error),
 

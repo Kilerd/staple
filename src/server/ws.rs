@@ -1,16 +1,6 @@
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use std::process::exit;
-use std::time::{Duration, Instant};
-
-use structopt::StructOpt;
-
-use actix::prelude::*;
-use actix::{
-    Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler, SystemRunner,
-};
-use actix_web::{web, HttpRequest, HttpResponse, HttpServer};
+use actix::{prelude::*, Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler};
 use actix_web_actors::ws;
-use file_lock::FileLock;
+use std::time::{Duration, Instant};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -36,7 +26,7 @@ impl Actor for WSServer {
 impl Handler<WsEvent> for WSServer {
     type Result = ();
 
-    fn handle(&mut self, msg: WsEvent, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: WsEvent, _ctx: &mut Self::Context) -> Self::Result {
         debug!("server receive msg");
         match msg {
             WsEvent::Join(data) => {

@@ -1,7 +1,7 @@
 use crate::server::ws::{MyWebSocket, WSServer, WsEvent};
-use actix::prelude::*;
 use actix::{Actor, Addr, SystemRunner};
 use actix_web::{web, HttpRequest, HttpResponse, HttpServer};
+
 pub mod ws;
 
 fn ws_index(

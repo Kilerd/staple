@@ -1,14 +1,7 @@
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{ErrorKind, Write};
-use std::path::Path;
-
-use tera::{compile_templates, Context, Tera};
-
-use crate::article::Article;
-use crate::config::Config;
-use crate::error::StapleError;
+use crate::{article::Article, config::Config, error::StapleError};
 use fs_extra::dir::CopyOptions;
+use std::path::Path;
+use tera::{compile_templates, Context, Tera};
 
 #[derive(Debug)]
 pub struct Template {
@@ -18,7 +11,7 @@ pub struct Template {
 
 impl Template {
     pub fn new(name: String) -> Self {
-        let mut tera = compile_templates!(&format!("templates/{}/**/*", name));
+        let tera = compile_templates!(&format!("templates/{}/**/*", name));
         Template { name, tera }
     }
 
@@ -30,7 +23,7 @@ impl Template {
         // article
         self.render_article(config, &articles)?;
 
-        self.copy_statics_folder(config);
+        self.copy_statics_folder(config)?;
 
         Template::remove_folder("public")?;
         std::fs::rename(".render", "public")?;

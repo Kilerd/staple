@@ -1,7 +1,4 @@
-use crate::article::Article;
-use crate::config::Config;
-use crate::error::StapleError;
-use crate::template::Template;
+use crate::{article::Article, config::Config, error::StapleError, template::Template};
 
 #[derive(Debug)]
 pub struct App {

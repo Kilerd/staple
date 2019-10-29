@@ -1,12 +1,7 @@
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{ErrorKind, Read};
-use std::path::Path;
-
-use serde_derive::{Deserialize, Serialize};
-use toml::Value;
-
 use crate::error::StapleError;
+use serde_derive::{Deserialize, Serialize};
+use std::{collections::HashMap, fs::File, io::Read, path::Path};
+use toml::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {

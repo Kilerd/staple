@@ -1,21 +1,12 @@
-use crate::app::App;
-use crate::error::StapleError;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use std::process::exit;
-use std::time::{Duration, Instant};
-
-use structopt::StructOpt;
-
-use crate::server::ws::WsEvent;
-use crate::server::Server;
-use actix::prelude::*;
-use actix::{
-    Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler, SystemRunner,
+use crate::{
+    app::App,
+    error::StapleError,
+    server::{ws::WsEvent, Server},
 };
-use actix_web::{web, HttpRequest, HttpResponse, HttpServer};
-use actix_web_actors::ws;
 use file_lock::FileLock;
-use std::path::Path;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use std::{path::Path, process::exit, time::Duration};
+use structopt::StructOpt;
 
 const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
 
@@ -40,7 +31,7 @@ impl StapleCommand {
 
         let (addr, sys) = Server::start();
 
-        let handle = std::thread::spawn(move || {
+        let _handle = std::thread::spawn(move || {
             let (tx, rx) = std::sync::mpsc::channel();
             let mut result: RecommendedWatcher =
                 Watcher::new(tx, Duration::from_secs(2)).expect("cannot watch");
@@ -81,7 +72,7 @@ impl StapleCommand {
 
     fn build() -> Result<(), StapleError> {
         StapleCommand::config_exist()?;
-        let file_lock = match FileLock::lock("Staple.lock", true, true) {
+        let _file_lock = match FileLock::lock("Staple.lock", true, true) {
             Ok(lock) => lock,
             Err(err) => panic!("Error getting write lock: {}", err),
         };

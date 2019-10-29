@@ -1,12 +1,8 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-
-use chrono::{DateTime, FixedOffset, Local};
+use crate::error::StapleError;
+use chrono::{DateTime, FixedOffset};
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
-
-use crate::error::StapleError;
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 #[derive(Parser)]
 #[grammar = "article.pest"] // relative to src
