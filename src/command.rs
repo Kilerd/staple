@@ -4,8 +4,15 @@ use crate::{
     server::{ws::WsEvent, Server},
 };
 use file_lock::FileLock;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use std::{path::Path, process::exit, time::Duration};
+use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
+use std::{
+    path::Path,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+    time::{Duration, Instant},
+};
 use structopt::StructOpt;
 
 const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
@@ -29,12 +36,17 @@ impl StapleCommand {
         StapleCommand::config_exist()?;
         StapleCommand::build()?;
 
+        let has_new_file_event = Arc::new(AtomicBool::new(false));
+        let _is_building = Arc::new(Mutex::new(false));
+
         let (addr, sys) = Server::start();
 
-        let _handle = std::thread::spawn(move || {
+        let file_event_flag_for_watcher = has_new_file_event.clone();
+        let _watcher_thread = std::thread::spawn(move || {
             let (tx, rx) = std::sync::mpsc::channel();
             let mut result: RecommendedWatcher =
                 Watcher::new(tx, Duration::from_secs(2)).expect("cannot watch");
+
             result
                 .watch("articles", RecursiveMode::Recursive)
                 .expect("cannot watch articles");
@@ -46,26 +58,40 @@ impl StapleCommand {
                 .expect("cannot watch articles");
 
             //                Ok(sys.run().expect("wrong on actix system run"))
+            let _instant = Arc::new(AtomicBool::new(false));
+            let _instant1 = Instant::now();
+
+            // 有文件事件来的时候就把 `should_update_flag` 设置为 true
+            // 循环监听，如果是true 就 build，完成后休眠100ms， build 之前先设置标识为为 false
             loop {
                 match rx.recv() {
-                    Ok(event) => {
-                        println!("{:?}", event);
-                        let result1 = App::load().expect("").render();
-                        match result1 {
-                            Ok(_) => {
-                                println!("successfully");
-                                addr.do_send(WsEvent::Refresh);
-                            }
-                            Err(e) => {
-                                eprintln!("{}", dbg!(e));
-                                exit(-1);
-                            }
+                    Ok(event) => match &event {
+                        Event::Chmod(_)
+                        | Event::Create(_)
+                        | Event::Write(_)
+                        | Event::Rename(_, _) => {
+                            info!("get an file event, {:?}", event);
+                            file_event_flag_for_watcher.store(true, Ordering::Relaxed);
                         }
-                    }
+                        _ => {}
+                    },
                     Err(e) => println!("watch error: {:?}", e),
                 }
             }
         });
+
+        let file_event_flag_for_builder = has_new_file_event.clone();
+        let _handle = std::thread::spawn(move || loop {
+            let need_build =
+                file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);
+            if need_build {
+                info!("build app");
+                StapleCommand::build();
+                addr.do_send(WsEvent::Refresh);
+            }
+            std::thread::sleep(Duration::from_secs(1));
+        });
+
         sys.run().expect("");
         Ok(())
     }

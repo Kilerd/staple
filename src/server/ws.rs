@@ -35,8 +35,8 @@ impl Handler<WsEvent> for WSServer {
             }
 
             WsEvent::Refresh => {
+                debug!("do send refresh to listeners");
                 for x in &self.listeners {
-                    debug!("do send refresh to listeners");
                     x.do_send(WsEvent::Refresh)
                 }
             }

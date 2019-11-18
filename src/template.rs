@@ -1,5 +1,5 @@
 use crate::{article::Article, config::Config, error::StapleError};
-use fs_extra::dir::CopyOptions;
+
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
 
@@ -34,7 +34,10 @@ impl Template {
         let statics_folder = format!("templates/{}/statics", config.site.theme);
         if Path::new(&statics_folder).exists() {
             debug!("statics folder exist, copy to render folder");
-            fs_extra::dir::copy(statics_folder, ".render", &CopyOptions::new())?;
+            copy_dir::copy_dir(statics_folder, ".render/statics")?;
+            //            let mut options = CopyOptions::new();
+            //            options.copy_inside = true;
+            //            fs_extra::dir::copy(statics_folder, ".render", &options)?;
         }
         Ok(())
     }
@@ -42,7 +45,7 @@ impl Template {
     pub fn remove_folder(path: &str) -> Result<(), StapleError> {
         let path1 = Path::new(path);
         if path1.exists() {
-            debug!("remote folder {}", path);
+            debug!("remove folder {}", path);
             std::fs::remove_dir_all(path1).map_err(StapleError::IoError)
         } else {
             Ok(())
@@ -74,8 +77,9 @@ impl Template {
             context.insert("config", config);
             let result = self.tera.render("article.html", &context)?;
 
+            std::fs::create_dir(format!(".render/articles/{}", &article.url))?;
             std::fs::write(
-                format!(".render/articles/{}.html", article.url),
+                format!(".render/articles/{}/index.html", article.url),
                 result.as_bytes(),
             )?;
         }
