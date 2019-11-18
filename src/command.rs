@@ -8,6 +8,7 @@ use console::style;
 use file_lock::FileLock;
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::default::Default;
+use std::path::PathBuf;
 use std::{
     path::Path,
     sync::{
@@ -23,6 +24,11 @@ const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
 pub enum StapleCommand {
+    New {
+        path: String,
+        #[structopt(long)]
+        title: Option<String>,
+    },
     Init,
     Build,
     Develop,
@@ -31,10 +37,25 @@ pub enum StapleCommand {
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
         match self {
+            StapleCommand::New { path, title } => StapleCommand::new(path, title),
             StapleCommand::Init => StapleCommand::init(),
             StapleCommand::Build => StapleCommand::build(),
             StapleCommand::Develop => StapleCommand::develop(),
         }
+    }
+
+    fn new(path: String, title: Option<String>) -> Result<(), StapleError> {
+        let buf = Path::new(".").join(&path);
+        if buf.as_path().exists() {
+            println!(
+                "{} folder {} existed, please delete it then run `new` again, or just use `--force` flag (it would delete existed folder and create a new one)",
+                style("ERROR").red(),
+                style(path).blue()
+            );
+            return Ok(());
+        }
+
+        Ok(())
     }
 
     /// init target folder as staple project structure
