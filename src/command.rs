@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::{
     app::App,
     error::StapleError,
@@ -6,6 +7,7 @@ use crate::{
 use console::style;
 use file_lock::FileLock;
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
+use std::default::Default;
 use std::{
     path::Path,
     sync::{
@@ -52,6 +54,11 @@ impl StapleCommand {
                 return Ok(());
             }
         }
+        let config = Config::default();
+        let string = toml::to_string(&config).expect("cannot serialize default config struct");
+        std::fs::write(STAPLE_CONFIG_FILE, string)?;
+        std::fs::create_dir("articles")?;
+        std::fs::create_dir("templates")?;
 
         println!("init");
         Ok(())

@@ -33,6 +33,17 @@ impl Config {
     }
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            site: Default::default(),
+            url: Default::default(),
+            pagination: Default::default(),
+            extra: Default::default(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Site {
     pub title: String,
