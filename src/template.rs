@@ -1,5 +1,6 @@
 use crate::{article::Article, config::Config, error::StapleError};
 
+use indicatif::ProgressIterator;
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
 
@@ -71,7 +72,7 @@ impl Template {
     ) -> Result<(), StapleError> {
         std::fs::create_dir(".render/articles")?;
 
-        for article in articles {
+        for article in articles.iter().progress() {
             let mut context = Context::new();
             context.insert("article", article);
             context.insert("config", config);

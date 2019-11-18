@@ -3,6 +3,7 @@ use crate::{
     error::StapleError,
     server::{ws::WsEvent, Server},
 };
+use console::style;
 use file_lock::FileLock;
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{
@@ -20,6 +21,7 @@ const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
 pub enum StapleCommand {
+    Init,
     Build,
     Develop,
 }
@@ -27,13 +29,36 @@ pub enum StapleCommand {
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
         match self {
+            StapleCommand::Init => StapleCommand::init(),
             StapleCommand::Build => StapleCommand::build(),
             StapleCommand::Develop => StapleCommand::develop(),
         }
     }
 
+    /// init target folder as staple project structure
+    /// check whether `Staple.toml` exist or not
+    /// generate `Staple.toml` config file
+    /// create folders `articles`, `templates`
+    /// put default template files
+    fn init() -> Result<(), StapleError> {
+        let check_files = vec![STAPLE_CONFIG_FILE, "articles", "templates"];
+        for path in check_files {
+            if Path::new(path).exists() {
+                println!(
+                    "{} '{}' existed, please delete it and then continue",
+                    style("ERROR").red(),
+                    style(path).blue()
+                );
+                return Ok(());
+            }
+        }
+
+        println!("init");
+        Ok(())
+    }
+
     fn develop() -> Result<(), StapleError> {
-        StapleCommand::config_exist()?;
+        StapleCommand::check_config_file_exist()?;
         StapleCommand::build()?;
 
         let has_new_file_event = Arc::new(AtomicBool::new(false));
@@ -97,7 +122,7 @@ impl StapleCommand {
     }
 
     fn build() -> Result<(), StapleError> {
-        StapleCommand::config_exist()?;
+        StapleCommand::check_config_file_exist()?;
         let _file_lock = match FileLock::lock("Staple.lock", true, true) {
             Ok(lock) => lock,
             Err(err) => panic!("Error getting write lock: {}", err),
@@ -105,8 +130,11 @@ impl StapleCommand {
 
         App::load()?.render()
     }
+    fn config_file_exist() -> bool {
+        Path::new(STAPLE_CONFIG_FILE).exists()
+    }
 
-    fn config_exist() -> Result<(), StapleError> {
+    fn check_config_file_exist() -> Result<(), StapleError> {
         if Path::new(STAPLE_CONFIG_FILE).exists() {
             Ok(())
         } else {

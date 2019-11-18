@@ -1,5 +1,6 @@
 use crate::error::StapleError;
 use chrono::{DateTime, FixedOffset};
+use indicatif::ProgressIterator;
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
 use std::{collections::HashMap, path::Path};
