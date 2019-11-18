@@ -8,9 +8,6 @@ pub enum StapleError {
     #[error("io error {:?} {}", .0.kind(), .0.to_string())]
     IoError(#[from] std::io::Error),
 
-    #[error("io error {:?} {}", .0.kind, .0.to_string())]
-    ExtraIoError(#[from] fs_extra::error::Error),
-
     #[error("config error {}", .0.to_string())]
     ConfigError(#[from] toml::de::Error),
 
