@@ -5,16 +5,15 @@ description = ""
 keywords = []
 author = ""
 email = ""
-utc_offset = +800
-theme = "staple"
+utc_offset = 800
+theme = "rubble"
 
 [url]
-url = ""
-root = ""
+url = "localhost"
+root = "/"
 permalink = "{year}/{month}/{day}/{title}.html"
 
 [pagination]
 page_size = 10
 
 [extra]
-version = "0.1.0"

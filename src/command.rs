@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::template::Template;
 use crate::{
     app::App,
     error::StapleError,
@@ -28,6 +29,8 @@ pub enum StapleCommand {
         path: String,
         #[structopt(long)]
         title: Option<String>,
+        #[structopt(short, long)]
+        force: bool,
     },
     Init,
     Build,
@@ -37,15 +40,19 @@ pub enum StapleCommand {
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
         match self {
-            StapleCommand::New { path, title } => StapleCommand::new(path, title),
-            StapleCommand::Init => StapleCommand::init(),
+            StapleCommand::New { path, title, force } => StapleCommand::new(path, title, force),
+            StapleCommand::Init => StapleCommand::init("."),
             StapleCommand::Build => StapleCommand::build(),
             StapleCommand::Develop => StapleCommand::develop(),
         }
     }
 
-    fn new(path: String, title: Option<String>) -> Result<(), StapleError> {
+    fn new(path: String, title: Option<String>, force: bool) -> Result<(), StapleError> {
         let buf = Path::new(".").join(&path);
+        if force {
+            // TODO add print
+            Template::remove_folder(path.as_str())?;
+        }
         if buf.as_path().exists() {
             println!(
                 "{} folder {} existed, please delete it then run `new` again, or just use `--force` flag (it would delete existed folder and create a new one)",
@@ -55,7 +62,8 @@ impl StapleCommand {
             return Ok(());
         }
 
-        Ok(())
+        std::fs::create_dir(buf)?;
+        StapleCommand::init(path.as_str())
     }
 
     /// init target folder as staple project structure
@@ -63,10 +71,12 @@ impl StapleCommand {
     /// generate `Staple.toml` config file
     /// create folders `articles`, `templates`
     /// put default template files
-    fn init() -> Result<(), StapleError> {
+    fn init(path: &str) -> Result<(), StapleError> {
+        let buf = Path::new(".").join(path);
+        dbg!(&buf);
         let check_files = vec![STAPLE_CONFIG_FILE, "articles", "templates"];
         for path in check_files {
-            if Path::new(path).exists() {
+            if buf.join(path).exists() {
                 println!(
                     "{} '{}' existed, please delete it and then continue",
                     style("ERROR").red(),
@@ -77,9 +87,9 @@ impl StapleCommand {
         }
         let config = Config::default();
         let string = toml::to_string(&config).expect("cannot serialize default config struct");
-        std::fs::write(STAPLE_CONFIG_FILE, string)?;
-        std::fs::create_dir("articles")?;
-        std::fs::create_dir("templates")?;
+        std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
+        std::fs::create_dir(buf.join("articles"))?;
+        std::fs::create_dir(buf.join("templates"))?;
 
         println!("init");
         Ok(())
