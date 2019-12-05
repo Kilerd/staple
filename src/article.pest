@@ -10,5 +10,5 @@ meta = { "\n"* ~ (inlineMeta ~ "\n"+)+ }
 inlineMeta = { " "* ~ "-" ~ " "* ~ inlineKey ~  " "* ~ "=" ~ " "* ~ inlineValue }
 
 inlineKey = { (!("\n" | " " | "=") ~ ANY)+ }
-inlineValue = { (!("\n") ~ ANY)+ }
+inlineValue = { (!("\n") ~ ANY)* }
 content = { ANY* }

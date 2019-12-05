@@ -1,3 +1,4 @@
+use crate::article::Article;
 use crate::config::Config;
 use crate::template::Template;
 use crate::{
@@ -23,6 +24,30 @@ use structopt::StructOpt;
 const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
 
 #[derive(StructOpt, Debug)]
+pub enum PageCommand {
+    New,
+}
+
+#[derive(StructOpt, Debug)]
+pub enum ArticleCommand {
+    New {
+        url: String,
+        #[structopt(long)]
+        tags: Vec<String>,
+        #[structopt(short, long)]
+        title: Option<String>,
+    },
+}
+
+impl ArticleCommand {
+    pub fn run(&self) -> Result<(), StapleError> {
+        match self {
+            ArticleCommand::New { url, tags, title } => Article::new_template(url, title, tags),
+        }
+    }
+}
+
+#[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
 pub enum StapleCommand {
     New {
@@ -35,6 +60,7 @@ pub enum StapleCommand {
     Init,
     Build,
     Develop,
+    Article(ArticleCommand),
 }
 
 impl StapleCommand {
@@ -44,6 +70,7 @@ impl StapleCommand {
             StapleCommand::Init => StapleCommand::init("."),
             StapleCommand::Build => StapleCommand::build(),
             StapleCommand::Develop => StapleCommand::develop(),
+            StapleCommand::Article(article_command) => article_command.run(),
         }
     }
 

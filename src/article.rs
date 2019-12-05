@@ -1,9 +1,16 @@
 use crate::error::StapleError;
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Local};
 use indicatif::ProgressIterator;
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Write;
 use std::{collections::HashMap, path::Path};
+
+#[cfg(windows)]
+const LINE_ENDING: &'static str = "\r\n";
+#[cfg(not(windows))]
+const LINE_ENDING: &'static str = "\n";
 
 #[derive(Parser)]
 #[grammar = "article.pest"] // relative to src
@@ -71,10 +78,7 @@ impl Article {
         let tags: Vec<String> = metas
             .remove("tags")
             .map(|raw| raw.split(",").map(|e| e.trim().to_string()).collect())
-            .ok_or(StapleError::ArticleError {
-                filename: file.to_string(),
-                reason: "tags does not exist in article's metadata".to_string(),
-            })?;
+            .unwrap_or_default();
         let option_date = metas
             .remove("datetime")
             .ok_or(StapleError::ArticleError {
@@ -96,5 +100,28 @@ impl Article {
             raw_content: content,
             markdown: "".to_string(),
         })
+    }
+
+    pub fn new_template(
+        url: &str,
+        title: &Option<String>,
+        tags: &Vec<String>,
+    ) -> Result<(), StapleError> {
+        let url = url.to_string();
+        let url_for_text = url.replace(" ", "_").replace("-", "_");
+
+        let tags = tags.join(", ");
+
+        let title = title.as_ref().unwrap_or(&url);
+        let path = Path::new("articles");
+        let mut result = File::create(path.join(format!("{}.md", url)))?;
+        result.write(&format!(" - title = {}{}", title, LINE_ENDING).as_bytes())?;
+        result.write(&format!(" - url = {}{}", &url_for_text, LINE_ENDING).as_bytes())?;
+        result.write(&format!(" - tags = {}{}", tags, LINE_ENDING).as_bytes())?;
+        let dt: DateTime<Local> = Local::now();
+        let format1 = dt.format("%Y-%m-%d %H:%M:%S %z").to_string();
+        result.write(&format!(" - datetime = {}{}", format1, LINE_ENDING).as_bytes())?;
+        result.write(LINE_ENDING.as_bytes())?;
+        Ok(())
     }
 }
