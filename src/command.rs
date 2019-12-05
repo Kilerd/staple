@@ -10,7 +10,7 @@ use console::style;
 use file_lock::FileLock;
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::default::Default;
-use std::path::PathBuf;
+
 use std::{
     path::Path,
     sync::{
@@ -74,7 +74,7 @@ impl StapleCommand {
         }
     }
 
-    fn new(path: String, title: Option<String>, force: bool) -> Result<(), StapleError> {
+    fn new(path: String, _title: Option<String>, force: bool) -> Result<(), StapleError> {
         let buf = Path::new(".").join(&path);
         if force {
             // TODO add print

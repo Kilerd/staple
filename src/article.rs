@@ -1,6 +1,6 @@
 use crate::error::StapleError;
 use chrono::{DateTime, FixedOffset, Local};
-use indicatif::ProgressIterator;
+
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
@@ -91,6 +91,9 @@ impl Article {
                 reason: format!("parse date error {}", e),
             })?;
 
+        let mut html_output = String::new();
+        let parser = pulldown_cmark::Parser::new(&content);
+        pulldown_cmark::html::push_html(&mut html_output, parser);
         Ok(Article {
             title: title.to_string(),
             url: url.to_string(),
@@ -98,7 +101,7 @@ impl Article {
             date: option_date,
             extra: metas,
             raw_content: content,
-            markdown: "".to_string(),
+            markdown: html_output,
         })
     }
 
