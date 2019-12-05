@@ -1,6 +1,5 @@
 use crate::{article::Article, config::Config, error::StapleError};
 
-use indicatif::ProgressIterator;
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
 
@@ -70,7 +69,15 @@ impl Template {
         config: &Config,
         articles: &Vec<Article>,
     ) -> Result<(), StapleError> {
-        for article in articles.iter().progress() {
+        let article_count = articles.len();
+        for (index, article) in articles.iter().enumerate() {
+            println!(
+                "{}/{} rendering article {}({}.md)",
+                index + 1,
+                article_count,
+                article.title,
+                article.url
+            );
             let mut context = Context::new();
             context.insert("article", article);
             context.insert("config", config);
