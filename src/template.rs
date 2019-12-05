@@ -70,17 +70,15 @@ impl Template {
         config: &Config,
         articles: &Vec<Article>,
     ) -> Result<(), StapleError> {
-        std::fs::create_dir(".render/articles")?;
-
         for article in articles.iter().progress() {
             let mut context = Context::new();
             context.insert("article", article);
             context.insert("config", config);
             let result = self.tera.render("article.html", &context)?;
 
-            std::fs::create_dir(format!(".render/articles/{}", &article.url))?;
+            std::fs::create_dir(format!(".render/{}", &article.url))?;
             std::fs::write(
-                format!(".render/articles/{}/index.html", article.url),
+                format!(".render/{}/index.html", article.url),
                 result.as_bytes(),
             )?;
         }
