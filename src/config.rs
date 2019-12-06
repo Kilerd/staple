@@ -7,6 +7,7 @@ use toml::Value;
 pub struct Config {
     pub site: Site,
     pub url: Url,
+    pub pages: Option<Vec<Page>>,
     pub pagination: Pagination,
     pub extra: HashMap<String, Value>,
 }
@@ -39,6 +40,7 @@ impl Default for Config {
             site: Default::default(),
             url: Default::default(),
             pagination: Default::default(),
+            pages: Default::default(),
             extra: Default::default(),
         }
     }
@@ -96,5 +98,24 @@ pub struct Pagination {
 impl Default for Pagination {
     fn default() -> Self {
         Self { page_size: 10 }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Page {
+    pub show_in_nav: bool,
+    pub nav_title: String,
+    pub file: String,
+    pub template: String,
+}
+
+impl Default for Page {
+    fn default() -> Self {
+        Self {
+            show_in_nav: false,
+            nav_title: "".to_string(),
+            file: "".to_string(),
+            template: "".to_string(),
+        }
     }
 }
