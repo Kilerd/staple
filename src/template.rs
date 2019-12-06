@@ -22,7 +22,8 @@ impl Template {
         self.render_index(config, &articles)?;
         // article
         self.render_article(config, &articles)?;
-
+        // pages
+        self.render_pages(config)?;
         self.copy_statics_folder(config)?;
 
         Template::remove_folder("public")?;
@@ -88,6 +89,27 @@ impl Template {
                 format!(".render/{}/index.html", article.url),
                 result.as_bytes(),
             )?;
+        }
+        Ok(())
+    }
+
+    pub fn render_pages(&self, config: &Config) -> Result<(), StapleError> {
+        if let Some(pages) = &config.pages {
+            let path = Path::new("pages");
+
+            dbg!(&pages);
+            for page in pages {
+                let article = Article::load(path.join(&page.file).to_str().unwrap())?;
+                let mut context = Context::new();
+                context.insert("article", &article);
+                context.insert("config", config);
+                let result = self.tera.render(&page.template, &context)?;
+                std::fs::create_dir(format!(".render/{}", &article.url))?;
+                std::fs::write(
+                    format!(".render/{}/index.html", article.url),
+                    result.as_bytes(),
+                )?;
+            }
         }
         Ok(())
     }
