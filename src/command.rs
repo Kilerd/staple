@@ -69,7 +69,10 @@ impl StapleCommand {
             StapleCommand::Init => StapleCommand::init("."),
             StapleCommand::Build => StapleCommand::build(),
             StapleCommand::Develop => StapleCommand::develop(),
-            StapleCommand::Article(article_command) => article_command.run(),
+            StapleCommand::Article(article_command) => {
+                StapleCommand::check_config_file_exist()?;
+                article_command.run()
+            }
         }
     }
 
@@ -115,6 +118,7 @@ impl StapleCommand {
         let string = toml::to_string(&config).expect("cannot serialize default config struct");
         std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
         std::fs::create_dir(buf.join("articles"))?;
+        std::fs::create_dir(buf.join("pages"))?;
         std::fs::create_dir(buf.join("templates"))?;
 
         println!("init");
