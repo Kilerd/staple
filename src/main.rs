@@ -12,6 +12,7 @@ mod app;
 mod article;
 mod command;
 mod config;
+mod constants;
 mod error;
 mod server;
 mod template;

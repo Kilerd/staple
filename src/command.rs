@@ -11,6 +11,7 @@ use file_lock::FileLock;
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::default::Default;
 
+use crate::constants::STAPLE_CONFIG_FILE;
 use std::{
     path::Path,
     sync::{
@@ -20,8 +21,6 @@ use std::{
     time::{Duration, Instant},
 };
 use structopt::StructOpt;
-
-const STAPLE_CONFIG_FILE: &'static str = "Staple.toml";
 
 #[derive(StructOpt, Debug)]
 pub enum PageCommand {

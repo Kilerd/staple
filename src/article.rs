@@ -1,16 +1,12 @@
 use crate::error::StapleError;
 use chrono::{DateTime, FixedOffset, Local};
 
+use crate::constants::LINE_ENDING;
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 use std::{collections::HashMap, path::Path};
-
-#[cfg(windows)]
-const LINE_ENDING: &'static str = "\r\n";
-#[cfg(not(windows))]
-const LINE_ENDING: &'static str = "\n";
 
 #[derive(Parser)]
 #[grammar = "article.pest"] // relative to src
