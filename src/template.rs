@@ -1,5 +1,7 @@
 use crate::{article::Article, config::Config, error::StapleError};
 
+use rss::{Channel, ChannelBuilder, Item, ItemBuilder};
+use std::collections::HashMap;
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
 
@@ -24,6 +26,8 @@ impl Template {
         self.render_article(config, &articles)?;
         // pages
         self.render_pages(config)?;
+        // rss
+        self.render_rss(config, &articles)?;
         self.copy_statics_folder(config)?;
 
         Template::remove_folder("public")?;
@@ -58,6 +62,7 @@ impl Template {
         config: &Config,
         articles: &Vec<Article>,
     ) -> Result<(), StapleError> {
+        dbg!(&config);
         let mut context = Context::new();
         context.insert("config", config);
         context.insert("articles", articles);
@@ -111,6 +116,61 @@ impl Template {
                 )?;
             }
         }
+        Ok(())
+    }
+    pub fn render_rss(&self, config: &Config, articles: &Vec<Article>) -> Result<(), StapleError> {
+        let items: Vec<Item> = articles
+            .into_iter()
+            .map(|item| {
+                ItemBuilder::default()
+                    .title(item.title.clone())
+                    .link(format!(
+                        "{}{}{}",
+                        config.url.url.clone(),
+                        config.url.root.clone(),
+                        item.url.clone()
+                    ))
+                    .description(item.markdown.clone())
+                    .content(item.markdown.clone())
+                    .pub_date(item.date.to_string())
+                    .build()
+                    .unwrap()
+            })
+            .collect();
+
+        let mut namespaces: HashMap<String, String> = HashMap::new();
+        namespaces.insert(
+            "dc".to_string(),
+            "http://purl.org/dc/elements/1.1/".to_string(),
+        );
+        namespaces.insert(
+            "content".to_string(),
+            "http://purl.org/rss/1.0/modules/content/".to_string(),
+        );
+        namespaces.insert(
+            "atom".to_string(),
+            "http://www.w3.org/2005/Atom".to_string(),
+        );
+        namespaces.insert(
+            "media".to_string(),
+            "http://search.yahoo.com/mrss/".to_string(),
+        );
+
+        let channel: Channel = ChannelBuilder::default()
+            .title(config.site.title.clone())
+            .description(config.site.description.clone())
+            .generator("Staple".to_string())
+            .link(format!(
+                "{}{}",
+                config.url.url.clone(),
+                config.url.root.clone()
+            ))
+            .items(items)
+            .namespaces(namespaces)
+            .build()
+            .unwrap();
+
+        std::fs::write(".render/rss.xml", channel.to_string().as_bytes())?;
         Ok(())
     }
 }
