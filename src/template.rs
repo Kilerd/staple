@@ -40,9 +40,6 @@ impl Template {
         if Path::new(&statics_folder).exists() {
             debug!("statics folder exist, copy to render folder");
             copy_dir::copy_dir(statics_folder, ".render/statics")?;
-            //            let mut options = CopyOptions::new();
-            //            options.copy_inside = true;
-            //            fs_extra::dir::copy(statics_folder, ".render", &options)?;
         }
         Ok(())
     }
