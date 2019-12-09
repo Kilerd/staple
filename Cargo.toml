@@ -28,3 +28,4 @@ copy_dir = "0.1.2"
 console = "0.9.1"
 pulldown-cmark = { version = "0.6.1", default-features = false }
 rss = "1.8.0"
+url = "2.1.0"

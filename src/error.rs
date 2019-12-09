@@ -19,4 +19,7 @@ pub enum StapleError {
 
     #[error("error on loading article {filename} : {reason}")]
     ArticleError { filename: String, reason: String },
+
+    #[error("error on parse url: {}", .0.to_string())]
+    UrlParseError(#[from] url::ParseError),
 }

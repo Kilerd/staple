@@ -119,17 +119,16 @@ impl Template {
         Ok(())
     }
     pub fn render_rss(&self, config: &Config, articles: &Vec<Article>) -> Result<(), StapleError> {
+        let url1 = url::Url::parse(&config.url.url)?;
+        let result = url1.join(&config.url.root)?;
+
         let items: Vec<Item> = articles
             .into_iter()
             .map(|item| {
+                let item_url = result.join(&item.url).unwrap().to_string();
                 ItemBuilder::default()
                     .title(item.title.clone())
-                    .link(format!(
-                        "{}{}{}",
-                        config.url.url.clone(),
-                        config.url.root.clone(),
-                        item.url.clone()
-                    ))
+                    .link(item_url)
                     .description(item.markdown.clone())
                     .content(item.markdown.clone())
                     .pub_date(item.date.to_string())
@@ -160,11 +159,7 @@ impl Template {
             .title(config.site.title.clone())
             .description(config.site.description.clone())
             .generator("Staple".to_string())
-            .link(format!(
-                "{}{}",
-                config.url.url.clone(),
-                config.url.root.clone()
-            ))
+            .link(result.to_string())
             .items(items)
             .namespaces(namespaces)
             .build()

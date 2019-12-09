@@ -1802,6 +1802,7 @@ dependencies = [
  "tera 0.11.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
