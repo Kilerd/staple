@@ -114,7 +114,7 @@ impl StapleCommand {
                 return Ok(());
             }
         }
-        let config = Config::default();
+        let config = Config::get_default_file();
         let string = toml::to_string(&config).expect("cannot serialize default config struct");
         std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
         std::fs::create_dir(buf.join("articles"))?;

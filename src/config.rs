@@ -1,10 +1,30 @@
+use crate::article::{Article, ArticleMeta};
 use crate::error::StapleError;
 use serde_derive::{Deserialize, Serialize};
+use std::ops::Deref;
 use std::{collections::HashMap, fs::File, io::Read, path::Path};
 use toml::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct PageMeta {
+    pub meta: ArticleMeta,
+    pub nav_title: String,
+    pub file: String,
+    pub template: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
+    pub site: Site,
+    pub url: Url,
+    pub pages: Option<Vec<PageMeta>>,
+    pub pagination: Pagination,
+    pub rss: RssConfig,
+    pub extra: HashMap<String, Value>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ConfigFile {
     pub site: Site,
     pub url: Url,
     pub pages: Option<Vec<Page>>,
@@ -19,7 +39,38 @@ impl Config {
         let mut file = File::open("Staple.toml")?;
         let mut string = String::new();
         file.read_to_string(&mut string)?;
-        toml::from_str(&string).map_err(|e| StapleError::ConfigError(e))
+        let result: ConfigFile = toml::from_str(&string)?;
+        Config::new_from_file(result)
+    }
+
+    pub fn new_from_file(config_file: ConfigFile) -> Result<Self, StapleError> {
+        let page_metas = if let Some(pages) = config_file.pages {
+            let mut page_metas = vec![];
+            let path = Path::new("pages");
+            for page in pages {
+                let article = Article::load(path.join(&page.file).to_str().unwrap())?;
+
+                let page_meta = PageMeta {
+                    meta: article.meta,
+                    nav_title: page.nav_title,
+                    file: page.file,
+                    template: page.template,
+                };
+                page_metas.push(page_meta);
+            }
+            Some(page_metas)
+        } else {
+            None
+        };
+
+        Ok(Self {
+            site: config_file.site,
+            url: config_file.url,
+            pages: page_metas,
+            pagination: config_file.pagination,
+            rss: config_file.rss,
+            extra: config_file.extra,
+        })
     }
 
     pub fn get_theme(&self) -> Result<String, StapleError> {
@@ -33,11 +84,15 @@ impl Config {
             Ok(self.site.theme.clone())
         }
     }
+
+    pub fn get_default_file() -> ConfigFile {
+        ConfigFile::default()
+    }
 }
 
-impl Default for Config {
+impl Default for ConfigFile {
     fn default() -> Self {
-        Config {
+        ConfigFile {
             site: Default::default(),
             url: Default::default(),
             pagination: Default::default(),
@@ -132,5 +187,18 @@ impl Default for RssConfig {
             enable: true,
             article_limited: 10,
         }
+    }
+}
+
+pub struct ConfigView {
+    config: Config,
+    page_meta: Option<Vec<ArticleMeta>>,
+}
+
+impl Deref for ConfigView {
+    type Target = Config;
+
+    fn deref(&self) -> &Self::Target {
+        &self.config
     }
 }
