@@ -13,14 +13,38 @@ use std::{collections::HashMap, path::Path};
 struct ArticleParser;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Article {
+pub struct MarkdownContent {
+    pub markdown: String,
+    pub html: String,
+}
+
+impl MarkdownContent {
+    pub fn new(raw: String) -> Self {
+        let mut html_output = String::new();
+        let parser = pulldown_cmark::Parser::new(&raw);
+        pulldown_cmark::html::push_html(&mut html_output, parser);
+
+        Self {
+            markdown: raw,
+            html: html_output,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ArticleMeta {
     pub title: String,
     pub url: String,
     pub tags: Vec<String>,
     pub date: DateTime<FixedOffset>,
-    pub raw_content: String,
-    pub markdown: String,
     pub extra: HashMap<String, String>,
+    pub description: Option<MarkdownContent>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Article {
+    pub meta: ArticleMeta,
+    pub content: MarkdownContent,
 }
 
 impl Article {
@@ -33,7 +57,7 @@ impl Article {
                 articles.push(Article::load(p.path().to_str().unwrap())?)
             }
         }
-        articles.sort_by(|one, other| other.date.cmp(&one.date));
+        articles.sort_by(|one, other| other.meta.date.cmp(&one.meta.date));
         Ok(articles)
     }
 
@@ -87,17 +111,23 @@ impl Article {
                 reason: format!("parse date error {}", e),
             })?;
 
-        let mut html_output = String::new();
-        let parser = pulldown_cmark::Parser::new(&content);
-        pulldown_cmark::html::push_html(&mut html_output, parser);
+        let description = if content.contains("<!--more-->") {
+            let content_split: Vec<&str> = content.splitn(2, "<!--more-->").collect();
+            Some(MarkdownContent::new(content_split[0].to_string()))
+        } else {
+            None
+        };
+
         Ok(Article {
-            title: title.to_string(),
-            url: url.to_string(),
-            tags,
-            date: option_date,
-            extra: metas,
-            raw_content: content,
-            markdown: html_output,
+            meta: ArticleMeta {
+                title: title.to_string(),
+                url: url.to_string(),
+                tags,
+                date: option_date,
+                extra: metas,
+                description,
+            },
+            content: MarkdownContent::new(content),
         })
     }
 

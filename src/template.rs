@@ -81,17 +81,17 @@ impl Template {
                 "{}/{} rendering article {}({}.md)",
                 index + 1,
                 article_count,
-                article.title,
-                article.url
+                article.meta.title,
+                article.meta.url
             );
             let mut context = Context::new();
             context.insert("article", article);
             context.insert("config", config);
             let result = self.tera.render("article.html", &context)?;
 
-            std::fs::create_dir(format!(".render/{}", &article.url))?;
+            std::fs::create_dir(format!(".render/{}", &article.meta.url))?;
             std::fs::write(
-                format!(".render/{}/index.html", article.url),
+                format!(".render/{}/index.html", article.meta.url),
                 result.as_bytes(),
             )?;
         }
@@ -109,9 +109,9 @@ impl Template {
                 context.insert("article", &article);
                 context.insert("config", config);
                 let result = self.tera.render(&page.template, &context)?;
-                std::fs::create_dir(format!(".render/{}", &article.url))?;
+                std::fs::create_dir(format!(".render/{}", &article.meta.url))?;
                 std::fs::write(
-                    format!(".render/{}/index.html", article.url),
+                    format!(".render/{}/index.html", article.meta.url),
                     result.as_bytes(),
                 )?;
             }
@@ -126,13 +126,19 @@ impl Template {
             .into_iter()
             .take(10)
             .map(|item| {
-                let item_url = result.join(&item.url).unwrap().to_string();
+                let item_url = result.join(&item.meta.url).unwrap().to_string();
                 ItemBuilder::default()
-                    .title(item.title.clone())
+                    .title(item.meta.title.clone())
                     .link(item_url)
-                    .description(item.markdown.clone())
-                    .content(item.markdown.clone())
-                    .pub_date(item.date.to_string())
+                    .description(
+                        item.meta
+                            .description
+                            .as_ref()
+                            .map(|description| description.html.clone())
+                            .unwrap_or_default(),
+                    )
+                    .content(item.content.html.clone())
+                    .pub_date(item.meta.date.to_string())
                     .build()
                     .unwrap()
             })
