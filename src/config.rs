@@ -9,6 +9,7 @@ pub struct Config {
     pub url: Url,
     pub pages: Option<Vec<Page>>,
     pub pagination: Pagination,
+    pub rss: RssConfig,
     pub extra: HashMap<String, Value>,
 }
 
@@ -42,6 +43,7 @@ impl Default for Config {
             pagination: Default::default(),
             pages: Default::default(),
             extra: Default::default(),
+            rss: Default::default(),
         }
     }
 }
@@ -77,7 +79,6 @@ impl Default for Site {
 pub struct Url {
     pub url: String,
     pub root: String,
-    pub permalink: String,
 }
 
 impl Default for Url {
@@ -85,7 +86,6 @@ impl Default for Url {
         Self {
             url: "http://localhost:8000".to_string(),
             root: "/".to_string(),
-            permalink: "{year}/{month}/{day}/{title}.html".to_string(),
         }
     }
 }
@@ -116,6 +116,21 @@ impl Default for Page {
             nav_title: "".to_string(),
             file: "".to_string(),
             template: "".to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RssConfig {
+    pub enable: bool,
+    pub article_limited: usize,
+}
+
+impl Default for RssConfig {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            article_limited: 10,
         }
     }
 }

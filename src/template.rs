@@ -116,60 +116,62 @@ impl Template {
         Ok(())
     }
     pub fn render_rss(&self, config: &Config, articles: &Vec<Article>) -> Result<(), StapleError> {
-        let url1 = url::Url::parse(&config.url.url)?;
-        let result = url1.join(&config.url.root)?;
+        if config.rss.enable {
+            let url1 = url::Url::parse(&config.url.url)?;
+            let result = url1.join(&config.url.root)?;
 
-        let items: Vec<Item> = articles
-            .into_iter()
-            .take(10)
-            .map(|item| {
-                let item_url = result.join(&item.meta.url).unwrap().to_string();
-                ItemBuilder::default()
-                    .title(item.meta.title.clone())
-                    .link(item_url)
-                    .description(
-                        item.meta
-                            .description
-                            .as_ref()
-                            .map(|description| description.html.clone())
-                            .unwrap_or_default(),
-                    )
-                    .content(item.content.html.clone())
-                    .pub_date(item.meta.date.to_string())
-                    .build()
-                    .unwrap()
-            })
-            .collect();
+            let items: Vec<Item> = articles
+                .into_iter()
+                .take(config.rss.article_limited)
+                .map(|item| {
+                    let item_url = result.join(&item.meta.url).unwrap().to_string();
+                    ItemBuilder::default()
+                        .title(item.meta.title.clone())
+                        .link(item_url)
+                        .description(
+                            item.meta
+                                .description
+                                .as_ref()
+                                .map(|description| description.html.clone())
+                                .unwrap_or_default(),
+                        )
+                        .content(item.content.html.clone())
+                        .pub_date(item.meta.date.to_string())
+                        .build()
+                        .unwrap()
+                })
+                .collect();
 
-        let mut namespaces: HashMap<String, String> = HashMap::new();
-        namespaces.insert(
-            "dc".to_string(),
-            "http://purl.org/dc/elements/1.1/".to_string(),
-        );
-        namespaces.insert(
-            "content".to_string(),
-            "http://purl.org/rss/1.0/modules/content/".to_string(),
-        );
-        namespaces.insert(
-            "atom".to_string(),
-            "http://www.w3.org/2005/Atom".to_string(),
-        );
-        namespaces.insert(
-            "media".to_string(),
-            "http://search.yahoo.com/mrss/".to_string(),
-        );
+            let mut namespaces: HashMap<String, String> = HashMap::new();
+            namespaces.insert(
+                "dc".to_string(),
+                "http://purl.org/dc/elements/1.1/".to_string(),
+            );
+            namespaces.insert(
+                "content".to_string(),
+                "http://purl.org/rss/1.0/modules/content/".to_string(),
+            );
+            namespaces.insert(
+                "atom".to_string(),
+                "http://www.w3.org/2005/Atom".to_string(),
+            );
+            namespaces.insert(
+                "media".to_string(),
+                "http://search.yahoo.com/mrss/".to_string(),
+            );
 
-        let channel: Channel = ChannelBuilder::default()
-            .title(config.site.title.clone())
-            .description(config.site.description.clone())
-            .generator("Staple".to_string())
-            .link(result.to_string())
-            .items(items)
-            .namespaces(namespaces)
-            .build()
-            .unwrap();
+            let channel: Channel = ChannelBuilder::default()
+                .title(config.site.title.clone())
+                .description(config.site.description.clone())
+                .generator("Staple".to_string())
+                .link(result.to_string())
+                .items(items)
+                .namespaces(namespaces)
+                .build()
+                .unwrap();
 
-        std::fs::write(".render/rss.xml", channel.to_string().as_bytes())?;
+            std::fs::write(".render/rss.xml", channel.to_string().as_bytes())?;
+        }
         Ok(())
     }
 }
