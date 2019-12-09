@@ -83,7 +83,7 @@ pub struct Url {
 impl Default for Url {
     fn default() -> Self {
         Self {
-            url: "localhost".to_string(),
+            url: "http://localhost:8000".to_string(),
             root: "/".to_string(),
             permalink: "{year}/{month}/{day}/{title}.html".to_string(),
         }
