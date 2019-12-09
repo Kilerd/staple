@@ -124,6 +124,7 @@ impl Template {
 
         let items: Vec<Item> = articles
             .into_iter()
+            .take(10)
             .map(|item| {
                 let item_url = result.join(&item.url).unwrap().to_string();
                 ItemBuilder::default()
