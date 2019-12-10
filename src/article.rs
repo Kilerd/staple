@@ -137,13 +137,13 @@ impl Article {
         tags: &Vec<String>,
     ) -> Result<(), StapleError> {
         let url = url.to_string();
-        let url_for_text = url.replace(" ", "_").replace("-", "_");
+        let url_for_text = url.replace(" ", "-");
 
         let tags = tags.join(", ");
 
         let title = title.as_ref().unwrap_or(&url);
         let path = Path::new("articles");
-        let mut result = File::create(path.join(format!("{}.md", url)))?;
+        let mut result = File::create(path.join(format!("{}.md", url_for_text)))?;
         result.write(&format!(" - title = {}{}", title, LINE_ENDING).as_bytes())?;
         result.write(&format!(" - url = {}{}", &url_for_text, LINE_ENDING).as_bytes())?;
         result.write(&format!(" - tags = {}{}", tags, LINE_ENDING).as_bytes())?;
