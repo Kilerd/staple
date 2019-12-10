@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("successfully");
         }
         Err(e) => {
-            eprintln!("{}", dbg!(e));
+            eprintln!("{}", e);
             exit(-1);
         }
     }

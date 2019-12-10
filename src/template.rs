@@ -59,7 +59,6 @@ impl Template {
         config: &Config,
         articles: &Vec<Article>,
     ) -> Result<(), StapleError> {
-        dbg!(&config);
         let mut context = Context::new();
         context.insert("config", config);
         context.insert("articles", articles);
@@ -98,8 +97,6 @@ impl Template {
     pub fn render_pages(&self, config: &Config) -> Result<(), StapleError> {
         if let Some(pages) = &config.pages {
             let path = Path::new("pages");
-
-            dbg!(&pages);
             for page in pages {
                 let article = Article::load(path.join(&page.file).to_str().unwrap())?;
                 let mut context = Context::new();

@@ -102,7 +102,6 @@ impl StapleCommand {
     /// put default template files
     fn init(path: &str) -> Result<(), StapleError> {
         let buf = Path::new(".").join(path);
-        dbg!(&buf);
         let check_files = vec![STAPLE_CONFIG_FILE, "articles", "templates"];
         for path in check_files {
             if buf.join(path).exists() {
