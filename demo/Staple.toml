@@ -6,14 +6,19 @@ keywords = []
 author = ""
 email = ""
 utc_offset = 800
-theme = "rubble"
+theme = "staple"
 
 [url]
-url = "localhost"
-root = "/"
+url = "https://kilerd.github.io/"
+root = "staple/"
 permalink = "{year}/{month}/{day}/{title}.html"
+
+[rss]
+enable = true
+article_limited = 10
 
 [pagination]
 page_size = 10
 
 [extra]
+version = "0.1.1"

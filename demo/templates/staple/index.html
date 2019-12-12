@@ -23,39 +23,39 @@
     <nav>
         {% for article in articles %}
 
-        <a href="/articles/{{article.url}}/">{{article.title}}</a>
+        <a href="/{{article.meta.url}}/">{{article.meta.title}}</a>
         {% endfor %}
     </nav>
 
 </div>
 </body>
-<script>
+<!--<script>-->
 
-    function websocket_connect() {
-        let webSocket = new WebSocket("ws://localhost:8000/notifier");
-        webSocket.onopen = function () {
-            webSocket.send("Connecting...");
-            console.log("ws connection...");
-        };
-        webSocket.onmessage = function (event) {
-            let data = event.data;
-            console.log("ws get event: ", data);
-            if (data === "refresh") {
-                window.location.reload();
-            }
-        };
-        webSocket.onclose = function (e) {
-            console.log("ws disconnected.", e);
-            console.log("trying to reconnect servere 5 second later");
-            setTimeout(websocket_connect, 5000);
-        };
-    }
+<!--    function websocket_connect() {-->
+<!--        let webSocket = new WebSocket("ws://localhost:8000/notifier");-->
+<!--        webSocket.onopen = function () {-->
+<!--            webSocket.send("Connecting...");-->
+<!--            console.log("ws connection...");-->
+<!--        };-->
+<!--        webSocket.onmessage = function (event) {-->
+<!--            let data = event.data;-->
+<!--            console.log("ws get event: ", data);-->
+<!--            if (data === "refresh") {-->
+<!--                window.location.reload();-->
+<!--            }-->
+<!--        };-->
+<!--        webSocket.onclose = function (e) {-->
+<!--            console.log("ws disconnected.", e);-->
+<!--            console.log("trying to reconnect servere 5 second later");-->
+<!--            setTimeout(websocket_connect, 5000);-->
+<!--        };-->
+<!--    }-->
 
-    if ("WebSocket" in window) {
-        websocket_connect();
+<!--    if ("WebSocket" in window) {-->
+<!--        websocket_connect();-->
 
-    } else {
-        console.log("your browser does not support websocket");
-    }
-</script>
+<!--    } else {-->
+<!--        console.log("your browser does not support websocket");-->
+<!--    }-->
+<!--</script>-->
 </html>

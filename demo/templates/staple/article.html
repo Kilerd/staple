@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ article.url }}</title>
+    <title>{{ article.meta.url }}</title>
 </head>
 <body>
-{{ article.raw_content }}
+{{ article.content.html | safe }}
 </body>
 </html>
