@@ -29,10 +29,14 @@ pub enum PageCommand {
 
 #[derive(StructOpt, Debug)]
 pub enum ArticleCommand {
+    /// create a new article
     New {
+        /// specific url of article
         url: String,
+        /// tags of article
         #[structopt(long)]
         tags: Vec<String>,
+        /// specific title, default is same as url
         #[structopt(short, long)]
         title: Option<String>,
     },
@@ -49,16 +53,24 @@ impl ArticleCommand {
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
 pub enum StapleCommand {
+    /// create a new folder and then init it as Staple project.
     New {
+        /// folder name
         path: String,
+        /// specific Staple project's title, default is Staple
         #[structopt(long)]
         title: Option<String>,
+        /// force to delete exist folder if existed, then create a new one and initialize.
         #[structopt(short, long)]
         force: bool,
     },
+    /// init current folder as Staple project.
     Init,
+    /// build
     Build,
+    /// start the develop server listening on local with live-reload
     Develop,
+    /// modification of articles
     Article(ArticleCommand),
 }
 

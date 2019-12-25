@@ -7,5 +7,6 @@
 <body>
 {{ article.content.html | safe }}
 
+{{ data | safe | json_encode(pretty=true) }}
 </body>
 </html>
