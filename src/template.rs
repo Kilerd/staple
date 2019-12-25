@@ -4,6 +4,8 @@ use rss::{Channel, ChannelBuilder, Item, ItemBuilder};
 use std::collections::HashMap;
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
+use toml::ser::SerializeTable::Table;
+use toml::Value;
 
 #[derive(Debug)]
 pub struct Template {
@@ -59,9 +61,19 @@ impl Template {
         config: &Config,
         articles: &Vec<Article>,
     ) -> Result<(), StapleError> {
+        let index_data = config
+            .site
+            .index_data
+            .as_ref()
+            .map(std::fs::read_to_string)
+            .transpose()?
+            .map(|content| content.parse::<Value>())
+            .transpose()?;
+
         let mut context = Context::new();
         context.insert("config", config);
         context.insert("articles", articles);
+        context.insert("data", &index_data);
         let result = self.tera.render("index.html", &context)?;
         std::fs::write(".render/index.html", result.as_bytes()).map_err(StapleError::IoError)
     }

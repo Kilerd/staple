@@ -113,6 +113,7 @@ pub struct Site {
     pub email: String,
     pub utc_offset: i16,
     pub theme: String,
+    pub index_data: Option<String>,
 }
 
 impl Default for Site {
@@ -126,6 +127,7 @@ impl Default for Site {
             email: "".to_string(),
             utc_offset: 800,
             theme: "rubble".to_string(),
+            index_data: None,
         }
     }
 }
