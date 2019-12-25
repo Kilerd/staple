@@ -111,9 +111,18 @@ impl Template {
             let path = Path::new("pages");
             for page in pages {
                 let article = Article::load(path.join(&page.file).to_str().unwrap())?;
+                let data = page
+                    .data
+                    .as_ref()
+                    .map(std::fs::read_to_string)
+                    .transpose()?
+                    .map(|content| content.parse::<Value>())
+                    .transpose()?;
+
                 let mut context = Context::new();
                 context.insert("article", &article);
                 context.insert("config", config);
+                context.insert("data", &data);
                 let result = self.tera.render(&page.template, &context)?;
                 std::fs::create_dir(format!(".render/{}", &article.meta.url))?;
                 std::fs::write(

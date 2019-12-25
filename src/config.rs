@@ -11,6 +11,7 @@ pub struct PageMeta {
     pub nav_title: String,
     pub file: String,
     pub template: String,
+    pub data: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -55,6 +56,7 @@ impl Config {
                     nav_title: page.nav_title,
                     file: page.file,
                     template: page.template,
+                    data: page.data,
                 };
                 page_metas.push(page_meta);
             }
@@ -164,6 +166,7 @@ pub struct Page {
     pub nav_title: String,
     pub file: String,
     pub template: String,
+    pub data: Option<String>,
 }
 
 impl Default for Page {
@@ -173,6 +176,7 @@ impl Default for Page {
             nav_title: "".to_string(),
             file: "".to_string(),
             template: "".to_string(),
+            data: None,
         }
     }
 }

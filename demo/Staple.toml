@@ -21,5 +21,12 @@ article_limited = 10
 [pagination]
 page_size = 10
 
+[[pages]]
+show_in_nav = true
+nav_title = "ABOUTME"
+file = "about.md"
+template = "page.html"
+data = "pages/about.toml"
+
 [extra]
 version = "0.1.1"
