@@ -28,5 +28,10 @@ file = "about.md"
 template = "page.html"
 data = "pages/about.toml"
 
+
+[[statics]]
+from = "CNAME"
+to = "CNAME"
+
 [extra]
 version = "0.1.1"

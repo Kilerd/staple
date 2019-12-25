@@ -21,6 +21,7 @@ pub struct Config {
     pub pages: Option<Vec<PageMeta>>,
     pub pagination: Pagination,
     pub rss: RssConfig,
+    pub statics: Vec<Statics>,
     pub extra: HashMap<String, Value>,
 }
 
@@ -31,6 +32,7 @@ pub struct ConfigFile {
     pub pages: Option<Vec<Page>>,
     pub pagination: Pagination,
     pub rss: RssConfig,
+    pub statics: Option<Vec<Statics>>,
     pub extra: HashMap<String, Value>,
 }
 
@@ -71,6 +73,7 @@ impl Config {
             pages: page_metas,
             pagination: config_file.pagination,
             rss: config_file.rss,
+            statics: config_file.statics.unwrap_or_default(),
             extra: config_file.extra,
         })
     }
@@ -101,6 +104,7 @@ impl Default for ConfigFile {
             pages: Default::default(),
             extra: Default::default(),
             rss: Default::default(),
+            statics: None,
         }
     }
 }
@@ -207,4 +211,10 @@ impl Deref for ConfigView {
     fn deref(&self) -> &Self::Target {
         &self.config
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Statics {
+    pub from: String,
+    pub to: String,
 }

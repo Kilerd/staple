@@ -31,6 +31,7 @@ impl Template {
         // rss
         self.render_rss(config, &articles)?;
         self.copy_statics_folder(config)?;
+        self.copy_statics(config)?;
 
         Template::remove_folder("public")?;
         std::fs::rename(".render", "public")?;
@@ -189,6 +190,16 @@ impl Template {
                 .unwrap();
 
             std::fs::write(".render/rss.xml", channel.to_string().as_bytes())?;
+        }
+        Ok(())
+    }
+
+    pub fn copy_statics(&self, config: &Config) -> Result<(), StapleError> {
+        let path1 = Path::new(".render");
+        for statics in &config.statics {
+            let buf = path1.join(&statics.to);
+            println!("coping statics from {} to {}", &statics.from, &statics.to);
+            std::fs::copy(&statics.from, buf)?;
         }
         Ok(())
     }
