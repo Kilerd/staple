@@ -3,6 +3,7 @@ use chrono::{DateTime, FixedOffset, Local};
 
 use crate::constants::LINE_ENDING;
 use pest::Parser;
+use pulldown_cmark::Options;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
@@ -21,7 +22,8 @@ pub struct MarkdownContent {
 impl MarkdownContent {
     pub fn new(raw: String) -> Self {
         let mut html_output = String::new();
-        let parser = pulldown_cmark::Parser::new(&raw);
+        let options = Options::all();
+        let parser = pulldown_cmark::Parser::new_ext(&raw, options);
         pulldown_cmark::html::push_html(&mut html_output, parser);
 
         Self {
