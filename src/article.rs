@@ -53,10 +53,14 @@ impl Article {
     pub fn load_all_article() -> Result<Vec<Article>, StapleError> {
         let path = Path::new("articles");
         let mut articles = vec![];
+        let dir = path.read_dir()?;
 
-        for path in path.read_dir()? {
+        for path in dir {
             if let Ok(p) = path {
-                articles.push(Article::load(p.path().to_str().unwrap())?)
+                let file_path = p.path();
+                if file_path.ends_with(".md") && file_path.is_file() {
+                    articles.push(Article::load(file_path.to_str().unwrap())?)
+                }
             }
         }
         articles.sort_by(|one, other| other.meta.date.cmp(&one.meta.date));
