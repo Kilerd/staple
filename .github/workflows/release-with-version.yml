@@ -42,8 +42,8 @@ jobs:
 
       - name: Run Code Test
         uses: actions-rs/cargo@v1
-          with:
-            command: test
+        with:
+          command: test
 
       - name: Run code build
         uses: actions-rs/cargo@v1
