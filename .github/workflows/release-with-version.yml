@@ -64,12 +64,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
+
+  release-homepage:
+    name: Release Homepage
+    runs-on: ubuntu-latest
+    steps:
       - name: Build Homepage
-        if: ${{ matrix.platform }} == "ubuntu"
         run: cd homepage && cargo run -- build
       - name: Deploy site to gh-pages branch
-        if: ${{ matrix.platform }} == "ubuntu"
         uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
-        with:
-          site-directory: homepage/public
-          repo-token: ${{ secrets.GH_PAT }}
+          with:
+            site-directory: homepage/public
+            repo-token: ${{ secrets.GH_PAT }}
