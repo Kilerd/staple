@@ -1,0 +1,75 @@
+name: Build Release Version
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*.*.*
+
+jobs:
+  release:
+    name: Release on ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        platform: [macos, windows, ubuntu]
+        include:
+          - platform: macos
+            target: x86_64-apple-darwin
+            os: macos-latest
+            bin: staple
+
+          - platform: windows
+            target: x86_64-pc-windows-msvc
+            os: windows-latest
+            bin: staple.exe
+
+          - platform: ubuntu
+            target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            bin: staple
+
+    steps:
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Run Code Test
+        uses: actions-rs/cargo@v1
+          with:
+            command: test
+
+      - name: Run code build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --locked --release --target ${{ matrix.target }}
+
+      - name: Prepare assets
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release
+          strip ${{ matrix.bin }}
+          tar czvf staple-${{ matrix.platform }}.tar.gz ${{ matrix.bin }}
+      - name: Release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/${{ matrix.target }}/release/hello-world-${{ matrix.platform }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build Homepage
+        if: ${{ -9.2 }} == "ubuntu"
+        run: cd homepage && cargo run -- build
+      - name: Deploy site to gh-pages branch
+        if: ${{ -9.2 }} == "ubuntu"
+        uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
+        with:
+          site-directory: homepage/public
+          repo-token: ${{ secrets.GH_PAT }}
