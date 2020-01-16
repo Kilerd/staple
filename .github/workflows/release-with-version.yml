@@ -65,10 +65,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Build Homepage
-        if: ${{ -9.2 }} == "ubuntu"
+        if: ${{ matrix.platform }} == "ubuntu"
         run: cd homepage && cargo run -- build
       - name: Deploy site to gh-pages branch
-        if: ${{ -9.2 }} == "ubuntu"
+        if: ${{ matrix.platform }} == "ubuntu"
         uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
         with:
           site-directory: homepage/public
