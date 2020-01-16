@@ -73,6 +73,6 @@ jobs:
         run: cd homepage && cargo run -- build
       - name: Deploy site to gh-pages branch
         uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
-          with:
-            site-directory: homepage/public
-            repo-token: ${{ secrets.GH_PAT }}
+        with:
+          site-directory: homepage/public
+          repo-token: ${{ secrets.GH_PAT }}
