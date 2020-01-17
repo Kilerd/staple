@@ -58,7 +58,7 @@ impl Article {
         for path in dir {
             if let Ok(p) = path {
                 let file_path = p.path();
-                if file_path.ends_with(".md") && file_path.is_file() {
+                if file_path.extension().unwrap().eq("md") && file_path.is_file() {
                     articles.push(Article::load(file_path.to_str().unwrap())?)
                 }
             }
