@@ -58,7 +58,9 @@ impl Article {
         for path in dir {
             if let Ok(p) = path {
                 let file_path = p.path();
-                if file_path.extension().unwrap().eq("md") && file_path.is_file() {
+                let is_md_file =
+                    file_path.extension().map(|extension| extension.eq("md")) == Some(true);
+                if is_md_file && file_path.is_file() {
                     articles.push(Article::load(file_path.to_str().unwrap())?)
                 }
             }
