@@ -22,5 +22,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let opt: StapleCommand = StapleCommand::from_args();
     let result = opt.run();
+    if let Err(e) = result {
+        eprintln!("Error: {}", e);
+        exit(1);
+    }
     Ok(())
 }
