@@ -1,20 +1,24 @@
 use crate::constants::{CLIENT_TIMEOUT, HEARTBEAT_INTERVAL};
 use actix::{prelude::*, Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler};
 use actix_web_actors::ws;
+use std::collections::HashSet;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[derive(Message)]
 pub enum WsEvent {
     Refresh,
     Join(Addr<MyWebSocket>),
+    Stop(Addr<MyWebSocket>),
 }
 
 pub struct WSServer {
-    pub listeners: Vec<Addr<MyWebSocket>>,
+    pub listeners: HashSet<Addr<MyWebSocket>>,
 }
 
 pub struct MyWebSocket {
     hb: Instant,
+    server: Arc<Addr<WSServer>>,
 }
 
 impl Actor for WSServer {
@@ -29,7 +33,7 @@ impl Handler<WsEvent> for WSServer {
         match msg {
             WsEvent::Join(data) => {
                 debug!("listener join");
-                self.listeners.push(data);
+                self.listeners.insert(data);
             }
 
             WsEvent::Refresh => {
@@ -38,13 +42,21 @@ impl Handler<WsEvent> for WSServer {
                     x.do_send(WsEvent::Refresh)
                 }
             }
+            WsEvent::Stop(data) => {
+                debug!("listener stop");
+                self.listeners.remove(&data);
+                debug!("after listener remove: {:?}", self.listeners.len());
+            }
         }
     }
 }
 
 impl MyWebSocket {
-    pub fn new() -> Self {
-        Self { hb: Instant::now() }
+    pub fn new_with_server(server: Arc<Addr<WSServer>>) -> Self {
+        Self {
+            hb: Instant::now(),
+            server,
+        }
     }
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
@@ -104,6 +116,7 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for MyWebSocket {
             ws::Message::Binary(bin) => ctx.binary(bin),
             ws::Message::Close(_) => {
                 ctx.stop();
+                self.server.do_send(WsEvent::Stop(ctx.address()))
             }
             ws::Message::Nop => (),
         }
