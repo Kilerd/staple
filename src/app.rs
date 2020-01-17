@@ -2,8 +2,8 @@ use crate::{article::Article, config::Config, error::StapleError, template::Temp
 
 #[derive(Debug)]
 pub struct App {
-    config: Config,
-    template: Template,
+    pub(crate) config: Config,
+    pub(crate) template: Template,
 }
 
 impl App {

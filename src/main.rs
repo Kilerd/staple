@@ -22,15 +22,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let opt: StapleCommand = StapleCommand::from_args();
     let result = opt.run();
-    match result {
-        Ok(_) => {
-            println!("successfully");
-        }
-        Err(e) => {
-            eprintln!("{}", e);
-            exit(-1);
-        }
-    }
-
     Ok(())
 }

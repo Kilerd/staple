@@ -29,6 +29,7 @@ pub mod develop;
 pub mod init;
 pub mod new;
 pub mod page;
+pub mod show;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
@@ -52,6 +53,9 @@ pub enum StapleCommand {
     Develop,
     /// modification of articles
     Article(ArticleCommand),
+
+    /// show all information of staple project
+    Show,
 }
 
 impl StapleCommand {
@@ -64,6 +68,10 @@ impl StapleCommand {
             StapleCommand::Article(article_command) => {
                 StapleCommand::check_config_file_exist()?;
                 article_command.run()
+            }
+            StapleCommand::Show => {
+                StapleCommand::check_config_file_exist()?;
+                show::show()
             }
         }
     }
