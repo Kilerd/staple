@@ -59,6 +59,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
             file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);
         if need_build {
             info!("build app");
+            println!("build stage is triggered by file event.");
             crate::command::build::build();
             addr.do_send(WsEvent::Refresh);
         }
