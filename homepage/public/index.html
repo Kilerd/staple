@@ -9,10 +9,10 @@
 </head>
 <body>
 <div>
-    <h1 class="title">Staple<span>0.1.1</span></h1>
+    <h1 class="title">Staple<span>0.2.0</span></h1>
     <p class="description">简化你的博客之旅。</p>
     <br>
-    <div>hehehe</div>
+    <div>hehehefsdfsfdsfs</div>
     <nav>
         <a href="archive.html">Archives</a>
         <a href="Changelog.html">Changelog</a>
@@ -34,33 +34,33 @@
 
 </div>
 </body>
-<!--<script>-->
+<script>
 
-<!--    function websocket_connect() {-->
-<!--        let webSocket = new WebSocket("ws://localhost:8000/notifier");-->
-<!--        webSocket.onopen = function () {-->
-<!--            webSocket.send("Connecting...");-->
-<!--            console.log("ws connection...");-->
-<!--        };-->
-<!--        webSocket.onmessage = function (event) {-->
-<!--            let data = event.data;-->
-<!--            console.log("ws get event: ", data);-->
-<!--            if (data === "refresh") {-->
-<!--                window.location.reload();-->
-<!--            }-->
-<!--        };-->
-<!--        webSocket.onclose = function (e) {-->
-<!--            console.log("ws disconnected.", e);-->
-<!--            console.log("trying to reconnect servere 5 second later");-->
-<!--            setTimeout(websocket_connect, 5000);-->
-<!--        };-->
-<!--    }-->
+    function websocket_connect() {
+        let webSocket = new WebSocket("ws://localhost:8000/notifier");
+        webSocket.onopen = function () {
+            webSocket.send("Connecting...");
+            console.log("ws connection...");
+        };
+        webSocket.onmessage = function (event) {
+            let data = event.data;
+            console.log("ws get event: ", data);
+            if (data === "refresh") {
+                window.location.reload();
+            }
+        };
+        webSocket.onclose = function (e) {
+            console.log("ws disconnected.", e);
+            console.log("trying to reconnect servere 5 second later");
+            setTimeout(websocket_connect, 5000);
+        };
+    }
 
-<!--    if ("WebSocket" in window) {-->
-<!--        websocket_connect();-->
+    if ("WebSocket" in window) {
+        websocket_connect();
 
-<!--    } else {-->
-<!--        console.log("your browser does not support websocket");-->
-<!--    }-->
-<!--</script>-->
+    } else {
+        console.log("your browser does not support websocket");
+    }
+</script>
 </html>
