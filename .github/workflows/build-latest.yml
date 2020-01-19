@@ -3,7 +3,7 @@ name: Develop Build
 on:
   push:
     branches:
-      - develop
+      - master
 
 jobs:
   build:
