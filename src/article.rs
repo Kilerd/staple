@@ -2,8 +2,10 @@ use crate::error::StapleError;
 use chrono::{DateTime, FixedOffset, Local};
 
 use crate::constants::LINE_ENDING;
+use itertools::Itertools;
 use pest::Parser;
-use pulldown_cmark::Options;
+use pulldown_cmark::{Event, Options};
+use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
@@ -23,7 +25,43 @@ impl MarkdownContent {
     pub fn new(raw: String) -> Self {
         let mut html_output = String::new();
         let options = Options::all();
-        let parser = pulldown_cmark::Parser::new_ext(&raw, options);
+        let parser = pulldown_cmark::Parser::new_ext(&raw, options).flat_map(|event| match event {
+            Event::Text(text) => {
+                let mut text_chars = text.chars();
+                let mut events = vec![];
+                let re = Regex::new(r#"\{(?P<title>.+)\}\((?P<ruby>.+)\)"#).unwrap();
+                let mut last_end_index = 0;
+                for captures in re.captures_iter(&text) {
+                    let ruby_group = captures.get(0).unwrap();
+                    let ruby_name = captures.name("title").unwrap().as_str().to_string();
+                    let ruby_description = captures.name("ruby").unwrap().as_str().to_string();
+                    let ruby_group_start = ruby_group.start();
+
+                    if last_end_index != ruby_group_start {
+                        let ruby_prefix_content: String = text_chars
+                            .by_ref()
+                            .take(ruby_group_start - last_end_index)
+                            .collect();
+                        events.push(Event::Text(ruby_prefix_content.into()));
+                    }
+                    last_end_index = ruby_group.end();
+                    text_chars = text_chars.dropping(ruby_group.end() - ruby_group.start());
+
+                    events.push(Event::Html("<ruby>".into()));
+                    events.push(Event::Text(ruby_name.into()));
+                    events.push(Event::Html("<rp>(</rp><rt>".into()));
+                    events.push(Event::Text(ruby_description.into()));
+                    events.push(Event::Html("</rt><rp>)</rp>".into()));
+                    events.push(Event::Html("</ruby>".into()));
+                }
+                if last_end_index < text.len() {
+                    let rest: String = text_chars.collect();
+                    events.push(Event::Text(rest.into()));
+                }
+                events
+            }
+            _ => vec![event],
+        });
         pulldown_cmark::html::push_html(&mut html_output, parser);
 
         Self {
@@ -160,5 +198,20 @@ impl Article {
         result.write(&format!(" - datetime = {}{}", format1, LINE_ENDING).as_bytes())?;
         result.write(LINE_ENDING.as_bytes())?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::article::MarkdownContent;
+
+    #[test]
+    fn should_render_ruby_tag() {
+        let content =
+            MarkdownContent::new("**this** is **{ruby}(ruby description) aaa** tag".to_string());
+        assert_eq!(
+            "<p><strong>this</strong> is <strong><ruby>ruby<rp>(</rp><rt>ruby description</rt><rp>)</rp></ruby> aaa</strong> tag</p>\n",
+            content.html
+        );
     }
 }
