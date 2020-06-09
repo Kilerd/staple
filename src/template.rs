@@ -147,6 +147,7 @@ impl Template {
                     ItemBuilder::default()
                         .title(item.meta.title.clone())
                         .link(item_url)
+                        .guid(item_url.clone())
                         .description(
                             item.meta
                                 .description
