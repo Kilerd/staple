@@ -1,6 +1,6 @@
 use crate::{article::Article, config::Config, error::StapleError};
 
-use rss::{Channel, ChannelBuilder, Item, ItemBuilder};
+use rss::{Channel, ChannelBuilder, Guid, Item, ItemBuilder};
 use std::collections::HashMap;
 use std::path::Path;
 use tera::{compile_templates, Context, Tera};
@@ -144,10 +144,12 @@ impl Template {
                 .take(config.rss.article_limited)
                 .map(|item| {
                     let item_url = result.join(&item.meta.url).unwrap().to_string();
+                    let mut guid = Guid::default();
+                    guid.set_value(item_url.clone());
                     ItemBuilder::default()
                         .title(item.meta.title.clone())
                         .link(item_url)
-                        .guid(item_url.clone())
+                        .guid(guid)
                         .description(
                             item.meta
                                 .description
