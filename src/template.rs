@@ -155,7 +155,7 @@ impl Template {
                                 .unwrap_or_default(),
                         )
                         .content(item.content.html.clone())
-                        .pub_date(item.meta.date.to_string())
+                        .pub_date(item.meta.date.to_rfc2822())
                         .build()
                         .unwrap()
                 })
