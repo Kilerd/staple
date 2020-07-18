@@ -50,18 +50,18 @@ impl Config {
         let page_metas = if let Some(pages) = config_file.pages {
             let mut page_metas = vec![];
             let path = Path::new("pages");
-            for page in pages {
-                let article = Article::load(path.join(&page.file).to_str().unwrap())?;
-
-                let page_meta = PageMeta {
-                    meta: article.meta,
-                    nav_title: page.nav_title,
-                    file: page.file,
-                    template: page.template,
-                    data: page.data,
-                };
-                page_metas.push(page_meta);
-            }
+            // for page in pages {
+            //     let article = Article::load(path.join(&page.file).to_str().unwrap())?;
+            //
+            //     let page_meta = PageMeta {
+            //         meta: article.meta,
+            //         nav_title: page.nav_title,
+            //         file: page.file,
+            //         template: page.template,
+            //         data: page.data,
+            //     };
+            //     page_metas.push(page_meta);
+            // }
             Some(page_metas)
         } else {
             None

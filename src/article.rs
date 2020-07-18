@@ -86,8 +86,13 @@ pub struct ArticleMeta {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Article {
-    pub meta: ArticleMeta,
-    pub content: MarkdownContent,
+    pub url:String,
+    pub title: String,
+    pub template: String,
+    pub datetime: Option<DateTime<FixedOffset>>,
+    // todo support multiple layers of data
+    pub data: HashMap<String, String>,
+    pub content: MarkdownContent
 }
 
 impl Article {
@@ -106,7 +111,7 @@ impl Article {
                 }
             }
         }
-        articles.sort_by(|one, other| other.meta.date.cmp(&one.meta.date));
+        // articles.sort_by(|one, other| other.meta.date.cmp(&one.meta.date));
         Ok(articles)
     }
 
@@ -136,18 +141,18 @@ impl Article {
             }
         }
 
-        let title = metas.remove("title").ok_or(StapleError::ArticleError {
-            filename: file.to_string(),
-            reason: "title does not exist in article's metadata".to_string(),
-        })?;
         let url = metas.remove("url").ok_or(StapleError::ArticleError {
             filename: file.to_string(),
             reason: "url does not exist in article's metadata".to_string(),
         })?;
-        let tags: Vec<String> = metas
-            .remove("tags")
-            .map(|raw| raw.split(",").map(|e| e.trim().to_string()).collect())
-            .unwrap_or_default();
+        let title = metas.remove("title").ok_or(StapleError::ArticleError {
+            filename: file.to_string(),
+            reason: "title does not exist in article's metadata".to_string(),
+        })?;
+        let template = metas.remove("template").ok_or(StapleError::ArticleError {
+            filename: file.to_string(),
+            reason: "template does not exist in article's metadata".to_string(),
+        })?;
         let option_date = metas
             .remove("datetime")
             .ok_or(StapleError::ArticleError {
@@ -159,6 +164,10 @@ impl Article {
                 filename: file.to_string(),
                 reason: format!("parse date error {}", e),
             })?;
+        // let tags: Vec<String> = metas
+        //     .remove("tags")
+        //     .map(|raw| raw.split(",").map(|e| e.trim().to_string()).collect())
+        //     .unwrap_or_default();
 
         let description = if content.contains("<!--more-->") {
             let content_split: Vec<&str> = content.splitn(2, "<!--more-->").collect();
@@ -168,15 +177,12 @@ impl Article {
         };
 
         Ok(Article {
-            meta: ArticleMeta {
-                title: title.to_string(),
-                url: url.to_string(),
-                tags,
-                date: option_date,
-                extra: metas,
-                description,
-            },
+            url,
+            title,
+            template,
+            datetime: Some(option_date),
             content: MarkdownContent::new(content),
+            data: metas
         })
     }
 

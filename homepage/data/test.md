@@ -1,8 +1,9 @@
- - fsdfs= fsdffsdfdsfdsfsd fdsfdsf
+ - url = /test-markdown-file
  - title = hello
- - url = test-markdown-file
- - tags = test, markdown
+ - template = content.html
  - datetime = 2014-11-28 21:00:09 +08:00
+ - tags = test, markdown
+ - fsdfs = fsdffsdfdsfdsfsd fdsfdsf
 
 fsdf
 

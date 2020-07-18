@@ -9,7 +9,7 @@
 </head>
 <body>
 <div>
-    <h1 class="title">Staple<span>{{ config.extra.version }}</span></h1>
+    <h1 class="title">Staple</h1>
     <p class="description">简化你的博客之旅。</p>
     <br>
     <div>hehehefsdfsfdsfs</div>
@@ -18,16 +18,7 @@
         <a href="Changelog.html">Changelog</a>
         <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
     </nav>
-
-
-    <nav>
-        {% for article in articles %}
-
-        <a href="/{{article.meta.url}}/">{{article.meta.title}}</a>
-        {% endfor %}
-    </nav>
-
-    data test: {{ data.mykey }}
+    {{content.html | safe }}
 
 </div>
 </body>

@@ -11,7 +11,7 @@ pub enum StapleError {
     #[error("config error {}", .0.to_string())]
     ConfigError(#[from] toml::de::Error),
 
-    #[error("render error {}", .0.to_string())]
+    #[error("render error {0}")]
     RenderError(#[from] tera::Error),
 
     #[error("theme '{0}' does not exist")]
@@ -22,4 +22,6 @@ pub enum StapleError {
 
     #[error("error on parse url: {}", .0.to_string())]
     UrlParseError(#[from] url::ParseError),
+    #[error("cannot serde json file: {0}")]
+    JsonFileParseError(#[from] serde_json::Error),
 }
