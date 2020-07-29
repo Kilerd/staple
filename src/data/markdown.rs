@@ -1,78 +1,26 @@
-use crate::error::StapleError;
-use chrono::{DateTime, FixedOffset, Local};
+use std::{collections::HashMap, path::Path};
+use std::fs::File;
+use std::io::Write;
 
-use crate::constants::LINE_ENDING;
+use chrono::{DateTime, FixedOffset, Local};
 use itertools::Itertools;
 use pest::Parser;
 use pulldown_cmark::{Event, Options};
 use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::Write;
-use std::{collections::HashMap, path::Path};
+
+use crate::constants::DESCRIPTION_SEPARATOR;
+use crate::constants::LINE_ENDING;
+use crate::data::MarkdownContent;
+use crate::error::StapleError;
+
+
 
 #[derive(Parser)]
-#[grammar = "article.pest"] // relative to src
+#[grammar = "data/article.pest"] // relative to src
 struct ArticleParser;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MarkdownContent {
-    pub markdown: String,
-    pub html: String,
-}
 
-impl MarkdownContent {
-    pub fn new(raw: String) -> Self {
-        let mut html_output = String::new();
-        let options = Options::all();
-        let parser = pulldown_cmark::Parser::new_ext(&raw, options).flat_map(|event| match event {
-            Event::Text(text) => {
-                let mut text_chars = text.as_bytes().into_iter();
-                let mut events = vec![];
-                let re = Regex::new(r#"\{(?P<title>[^}]+)\}\((?P<ruby>[^\)]+)\)"#).unwrap();
-                let mut last_end_index = 0;
-                for captures in re.captures_iter(&text) {
-                    let ruby_group = captures.get(0).unwrap();
-                    let ruby_name = captures.name("title").unwrap().as_str().to_string();
-                    let ruby_description = captures.name("ruby").unwrap().as_str().to_string();
-                    let ruby_group_start = ruby_group.start();
-
-                    if last_end_index != ruby_group_start {
-                        let ruby_prefix_content: Vec<u8> = text_chars
-                            .by_ref()
-                            .take(ruby_group_start - last_end_index)
-                            .map(|i|*i)
-                            .collect();
-                        let string = String::from_utf8(ruby_prefix_content).unwrap();
-                        events.push(Event::Text(string.into()));
-                    }
-                    last_end_index = ruby_group.end();
-                    text_chars = text_chars.dropping(ruby_group.end() - ruby_group.start());
-
-                    events.push(Event::Html("<ruby>".into()));
-                    events.push(Event::Text(ruby_name.into()));
-                    events.push(Event::Html("<rp>(</rp><rt>".into()));
-                    events.push(Event::Text(ruby_description.into()));
-                    events.push(Event::Html("</rt><rp>)</rp>".into()));
-                    events.push(Event::Html("</ruby>".into()));
-                }
-                if last_end_index < text.len() {
-                    let rest: Vec<u8> = text_chars.map(|i|*i).collect();
-                    let rest = String::from_utf8(rest).unwrap();
-                    events.push(Event::Text(rest.into()));
-                }
-                events
-            }
-            _ => vec![event],
-        });
-        pulldown_cmark::html::push_html(&mut html_output, parser);
-
-        Self {
-            markdown: raw,
-            html: html_output,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ArticleMeta {
@@ -85,19 +33,22 @@ pub struct ArticleMeta {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Article {
-    pub url:String,
+pub struct MarkdownFileData {
+    pub url: String,
     pub title: String,
     pub template: String,
-    pub datetime: Option<DateTime<FixedOffset>>,
+    pub datetime: DateTime<FixedOffset>,
     // todo support multiple layers of data
     pub data: HashMap<String, String>,
-    pub content: MarkdownContent
+    pub content: MarkdownContent,
+    pub description: Option<MarkdownContent>
 }
 
-impl Article {
-    pub fn load_all_article() -> Result<Vec<Article>, StapleError> {
-        let path = Path::new("articles");
+
+
+impl MarkdownFileData {
+    pub fn load_all_article() -> Result<Vec<MarkdownFileData>, StapleError> {
+        let path = Path::new("data");
         let mut articles = vec![];
         let dir = path.read_dir()?;
 
@@ -107,7 +58,7 @@ impl Article {
                 let is_md_file =
                     file_path.extension().map(|extension| extension.eq("md")) == Some(true);
                 if is_md_file && file_path.is_file() {
-                    articles.push(Article::load(file_path.to_str().unwrap())?)
+                    articles.push(MarkdownFileData::load(file_path.to_str().unwrap())?)
                 }
             }
         }
@@ -115,7 +66,7 @@ impl Article {
         Ok(articles)
     }
 
-    pub fn load(file: &str) -> Result<Article, StapleError> {
+    pub fn load(file: &str) -> Result<MarkdownFileData, StapleError> {
         debug!("load article {}", &file);
         let string = std::fs::read_to_string(file)?;
         let mut metas: HashMap<String, String> = HashMap::new();
@@ -164,25 +115,22 @@ impl Article {
                 filename: file.to_string(),
                 reason: format!("parse date error {}", e),
             })?;
-        // let tags: Vec<String> = metas
-        //     .remove("tags")
-        //     .map(|raw| raw.split(",").map(|e| e.trim().to_string()).collect())
-        //     .unwrap_or_default();
 
-        let description = if content.contains("<!--more-->") {
-            let content_split: Vec<&str> = content.splitn(2, "<!--more-->").collect();
+        let description = if content.contains(DESCRIPTION_SEPARATOR) {
+            let content_split: Vec<&str> = content.splitn(2, DESCRIPTION_SEPARATOR).collect();
             Some(MarkdownContent::new(content_split[0].to_string()))
         } else {
             None
         };
 
-        Ok(Article {
+        Ok(MarkdownFileData {
             url,
             title,
             template,
-            datetime: Some(option_date),
+            datetime: option_date,
+            description,
             content: MarkdownContent::new(content),
-            data: metas
+            data: metas,
         })
     }
 
@@ -210,17 +158,4 @@ impl Article {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use crate::article::MarkdownContent;
 
-    #[test]
-    fn should_render_ruby_tag() {
-        let content =
-            MarkdownContent::new("**this** is **{ruby}(ruby description) aaa** tag".to_string());
-        assert_eq!(
-            "<p><strong>this</strong> is <strong><ruby>ruby<rp>(</rp><rt>ruby description</rt><rp>)</rp></ruby> aaa</strong> tag</p>\n",
-            content.html
-        );
-    }
-}

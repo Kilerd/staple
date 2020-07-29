@@ -1,35 +1,33 @@
-use crate::article::Article;
-use crate::config::Config;
-use crate::template::Template;
-use crate::{
-    app::App,
-    error::StapleError,
-    server::{ws::WsEvent, Server},
-};
-use console::style;
-use file_lock::FileLock;
-use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
-use std::default::Default;
-
-use crate::command::article::ArticleCommand;
-use crate::constants::STAPLE_CONFIG_FILE;
 use std::{
     path::Path,
     sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc,
+        atomic::{AtomicBool, Ordering}, Mutex,
     },
     time::{Duration, Instant},
 };
+use std::default::Default;
+
+use console::style;
+use file_lock::FileLock;
+use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use structopt::StructOpt;
 
-pub mod article;
+use crate::{
+    app::App,
+    error::StapleError,
+    server::{Server, ws::WsEvent},
+};
+use crate::config::Config;
+use crate::constants::STAPLE_CONFIG_FILE;
+use crate::template::Template;
+
 pub mod build;
 pub mod develop;
 pub mod init;
 pub mod new;
 pub mod page;
-pub mod show;
+pub mod list;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
@@ -51,11 +49,10 @@ pub enum StapleCommand {
     Build,
     /// start the develop server listening on local with live-reload
     Develop,
-    /// modification of articles
-    Article(ArticleCommand),
+
 
     /// show all information of staple project
-    Show,
+    List,
 }
 
 impl StapleCommand {
@@ -65,13 +62,9 @@ impl StapleCommand {
             StapleCommand::Init => init::init("."),
             StapleCommand::Build => build::build(),
             StapleCommand::Develop => develop::develop(),
-            StapleCommand::Article(article_command) => {
+            StapleCommand::List => {
                 StapleCommand::check_config_file_exist()?;
-                article_command.run()
-            }
-            StapleCommand::Show => {
-                StapleCommand::check_config_file_exist()?;
-                show::show()
+                list::command()
             }
         }
     }

@@ -4,7 +4,11 @@
   "template": "index.html",
   "datetime": "2015-02-18T23:59:60.234567+05:00",
   "data": {
-    "tags": ["test", "markdown", "json"]
+    "tags": [
+      "test",
+      "markdown",
+      "json"
+    ]
   },
   "content": "#hello staple\n here is the content"
 }

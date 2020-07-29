@@ -1,8 +1,7 @@
-use crate::command::StapleCommand;
 use crate::error::StapleError;
-use crate::template::Template;
 use console::style;
 use std::path::Path;
+use crate::template::Template;
 
 pub(crate) fn new(path: String, _title: Option<String>, force: bool) -> Result<(), StapleError> {
     let buf = Path::new(".").join(&path);

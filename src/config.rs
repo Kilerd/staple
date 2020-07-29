@@ -1,26 +1,14 @@
-use crate::article::{Article, ArticleMeta};
-use crate::error::StapleError;
-use serde_derive::{Deserialize, Serialize};
-use std::ops::Deref;
 use std::{collections::HashMap, fs::File, io::Read, path::Path};
+use std::ops::Deref;
+
+use serde_derive::{Deserialize, Serialize};
 use toml::Value;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PageMeta {
-    pub meta: ArticleMeta,
-    pub nav_title: String,
-    pub file: String,
-    pub template: String,
-    pub data: Option<String>,
-}
+use crate::error::StapleError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub site: Site,
-    pub url: Url,
-    pub pages: Option<Vec<PageMeta>>,
-    pub pagination: Pagination,
-    pub rss: RssConfig,
     pub statics: Vec<Statics>,
     pub extra: HashMap<String, Value>,
 }
@@ -28,10 +16,6 @@ pub struct Config {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConfigFile {
     pub site: Site,
-    pub url: Url,
-    pub pages: Option<Vec<Page>>,
-    pub pagination: Pagination,
-    pub rss: RssConfig,
     pub statics: Option<Vec<Statics>>,
     pub extra: HashMap<String, Value>,
 }
@@ -39,40 +23,14 @@ pub struct ConfigFile {
 impl Config {
     pub fn load_from_file() -> Result<Self, StapleError> {
         debug!("load config file");
-        let mut file = File::open("Staple.toml")?;
-        let mut string = String::new();
-        file.read_to_string(&mut string)?;
-        let result: ConfigFile = toml::from_str(&string)?;
+        let config_content = std::fs::read_to_string("Staple.toml")?;
+        let result: ConfigFile = toml::from_str(&config_content)?;
         Config::new_from_file(result)
     }
 
     pub fn new_from_file(config_file: ConfigFile) -> Result<Self, StapleError> {
-        let page_metas = if let Some(pages) = config_file.pages {
-            let mut page_metas = vec![];
-            let path = Path::new("pages");
-            // for page in pages {
-            //     let article = Article::load(path.join(&page.file).to_str().unwrap())?;
-            //
-            //     let page_meta = PageMeta {
-            //         meta: article.meta,
-            //         nav_title: page.nav_title,
-            //         file: page.file,
-            //         template: page.template,
-            //         data: page.data,
-            //     };
-            //     page_metas.push(page_meta);
-            // }
-            Some(page_metas)
-        } else {
-            None
-        };
-
         Ok(Self {
             site: config_file.site,
-            url: config_file.url,
-            pages: page_metas,
-            pagination: config_file.pagination,
-            rss: config_file.rss,
             statics: config_file.statics.unwrap_or_default(),
             extra: config_file.extra,
         })
@@ -99,11 +57,7 @@ impl Default for ConfigFile {
     fn default() -> Self {
         ConfigFile {
             site: Default::default(),
-            url: Default::default(),
-            pagination: Default::default(),
-            pages: Default::default(),
             extra: Default::default(),
-            rss: Default::default(),
             statics: None,
         }
     }
@@ -119,7 +73,8 @@ pub struct Site {
     pub email: String,
     pub utc_offset: i16,
     pub theme: String,
-    pub index_data: Option<String>,
+    pub domain: String,
+    pub domain_root: String,
 }
 
 impl Default for Site {
@@ -133,7 +88,8 @@ impl Default for Site {
             email: "".to_string(),
             utc_offset: 800,
             theme: "rubble".to_string(),
-            index_data: None,
+            domain: "".to_string(),
+            domain_root: "".to_string()
         }
     }
 }
@@ -150,66 +106,6 @@ impl Default for Url {
             url: "http://localhost:8000".to_string(),
             root: "/".to_string(),
         }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Pagination {
-    pub page_size: u32,
-}
-
-impl Default for Pagination {
-    fn default() -> Self {
-        Self { page_size: 10 }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Page {
-    pub show_in_nav: bool,
-    pub nav_title: String,
-    pub file: String,
-    pub template: String,
-    pub data: Option<String>,
-}
-
-impl Default for Page {
-    fn default() -> Self {
-        Self {
-            show_in_nav: false,
-            nav_title: "".to_string(),
-            file: "".to_string(),
-            template: "".to_string(),
-            data: None,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RssConfig {
-    pub enable: bool,
-    pub article_limited: usize,
-}
-
-impl Default for RssConfig {
-    fn default() -> Self {
-        Self {
-            enable: true,
-            article_limited: 10,
-        }
-    }
-}
-
-pub struct ConfigView {
-    config: Config,
-    page_meta: Option<Vec<ArticleMeta>>,
-}
-
-impl Deref for ConfigView {
-    type Target = Config;
-
-    fn deref(&self) -> &Self::Target {
-        &self.config
     }
 }
 

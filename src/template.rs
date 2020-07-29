@@ -1,4 +1,4 @@
-use crate::{article::Article, config::Config, error::StapleError};
+use crate::{config::Config, error::StapleError};
 
 use rss::{Channel, ChannelBuilder, Guid, Item, ItemBuilder};
 use std::collections::HashMap;
@@ -6,7 +6,8 @@ use std::path::Path;
 use tera::{compile_templates, Context, Tera};
 use toml::ser::SerializeTable::Table;
 use toml::Value;
-use crate::app::{FileData, Data};
+
+use crate::data::{DataFile, JsonFileData, MarkdownFileData};
 
 #[derive(Debug)]
 pub struct Template {
@@ -20,16 +21,16 @@ impl Template {
         Template { name, tera }
     }
 
-    pub fn render2(self, articles: Vec<FileData>, config: &Config) -> Result<(), StapleError> {
+    pub fn render(self, articles: Vec<DataFile>, config: &Config) -> Result<(), StapleError> {
         Template::remove_folder(".render")?;
         std::fs::create_dir(".render")?;
 
         for article in articles {
             match article {
-                FileData::JsonFile(data) => {
+                DataFile::JsonFile(data) => {
                     self.render_json(config, data)?
                 }
-                FileData::MarkdownFile(data) => {
+                DataFile::MarkdownFile(data) => {
                     self.render_markdown(config, data)?
                 }
             }
@@ -46,7 +47,7 @@ impl Template {
     pub fn render_json(
         &self,
         config: &Config,
-        article: Data,
+        article: JsonFileData,
     ) -> Result<(), StapleError> {
         let template = &article.template;
         let url = &article.url;
@@ -58,16 +59,14 @@ impl Template {
                 std::fs::create_dir_all(p)?;
             }
         }
-        dbg!(&string);
         std::fs::write(string, result.as_bytes()).map_err(StapleError::IoError)
     }
 
     pub fn render_markdown(
         &self,
         config: &Config,
-        article: Article,
+        article: MarkdownFileData,
     ) -> Result<(), StapleError> {
-
         let template = &article.template;
         let url = &article.url;
         let result = self.tera.render(&template, &article)?;
@@ -79,31 +78,9 @@ impl Template {
                 std::fs::create_dir_all(p)?;
             }
         }
-        dbg!(&string);
         std::fs::write(string, result.as_bytes()).map_err(StapleError::IoError)
     }
 
-
-
-
-    pub fn render(self, articles: Vec<Article>, config: &Config) -> Result<(), StapleError> {
-        Template::remove_folder(".render")?;
-        std::fs::create_dir(".render")?;
-        // index
-        self.render_index(config, &articles)?;
-        // // article
-        // self.render_article(config, &articles)?;
-        // // pages
-        // self.render_pages(config)?;
-        // // rss
-        // self.render_rss(config, &articles)?;
-        self.copy_statics_folder(config)?;
-        self.copy_statics(config)?;
-
-        Template::remove_folder("public")?;
-        std::fs::rename(".render", "public")?;
-        Ok(())
-    }
 
     fn copy_statics_folder(&self, config: &Config) -> Result<(), StapleError> {
         let statics_folder = format!("templates/{}/statics", config.site.theme);
@@ -124,145 +101,6 @@ impl Template {
         }
     }
 
-    pub fn render_index(
-        &self,
-        config: &Config,
-        articles: &Vec<Article>,
-    ) -> Result<(), StapleError> {
-        let index_data = config
-            .site
-            .index_data
-            .as_ref()
-            .map(std::fs::read_to_string)
-            .transpose()?
-            .map(|content| content.parse::<Value>())
-            .transpose()?;
-
-        let mut context = Context::new();
-        context.insert("config", config);
-        context.insert("articles", articles);
-        context.insert("data", &index_data);
-        let result = self.tera.render("index.html", &context)?;
-        std::fs::write(".render/index.html", result.as_bytes()).map_err(StapleError::IoError)
-    }
-
-    // pub fn render_article(
-    //     &self,
-    //     config: &Config,
-    //     articles: &Vec<Article>,
-    // ) -> Result<(), StapleError> {
-    //     let article_count = articles.len();
-    //     for (index, article) in articles.iter().enumerate() {
-    //         println!(
-    //             "{}/{} rendering article {}({}.md)",
-    //             index + 1,
-    //             article_count,
-    //             article.meta.title,
-    //             article.meta.url
-    //         );
-    //         let mut context = Context::new();
-    //         context.insert("article", article);
-    //         context.insert("config", config);
-    //         let result = self.tera.render("content.html", &context)?;
-    //
-    //         std::fs::create_dir(format!(".render/{}", &article.meta.url))?;
-    //         std::fs::write(
-    //             format!(".render/{}/index.html", article.meta.url),
-    //             result.as_bytes(),
-    //         )?;
-    //     }
-    //     Ok(())
-    // }
-    //
-    // pub fn render_pages(&self, config: &Config) -> Result<(), StapleError> {
-    //     if let Some(pages) = &config.pages {
-    //         let path = Path::new("pages");
-    //         for page in pages {
-    //             let article = Article::load(path.join(&page.file).to_str().unwrap())?;
-    //             let data = page
-    //                 .data
-    //                 .as_ref()
-    //                 .map(std::fs::read_to_string)
-    //                 .transpose()?
-    //                 .map(|content| content.parse::<Value>())
-    //                 .transpose()?;
-    //
-    //             let mut context = Context::new();
-    //             context.insert("article", &article);
-    //             context.insert("config", config);
-    //             context.insert("data", &data);
-    //             let result = self.tera.render(&page.template, &context)?;
-    //             std::fs::create_dir(format!(".render/{}", &article.meta.url))?;
-    //             std::fs::write(
-    //                 format!(".render/{}/index.html", article.meta.url),
-    //                 result.as_bytes(),
-    //             )?;
-    //         }
-    //     }
-    //     Ok(())
-    // }
-    // pub fn render_rss(&self, config: &Config, articles: &Vec<Article>) -> Result<(), StapleError> {
-    //     if config.rss.enable {
-    //         let url1 = url::Url::parse(&config.url.url)?;
-    //         let result = url1.join(&config.url.root)?;
-    //
-    //         let items: Vec<Item> = articles
-    //             .into_iter()
-    //             .take(config.rss.article_limited)
-    //             .map(|item| {
-    //                 let item_url = result.join(&item.meta.url).unwrap().to_string();
-    //                 let mut guid = Guid::default();
-    //                 guid.set_value(item_url.clone());
-    //                 ItemBuilder::default()
-    //                     .title(item.meta.title.clone())
-    //                     .link(item_url)
-    //                     .guid(guid)
-    //                     .description(
-    //                         item.meta
-    //                             .description
-    //                             .as_ref()
-    //                             .map(|description| description.html.clone())
-    //                             .unwrap_or_default(),
-    //                     )
-    //                     .content(item.content.html.clone())
-    //                     .pub_date(item.meta.date.to_rfc2822())
-    //                     .build()
-    //                     .unwrap()
-    //             })
-    //             .collect();
-    //
-    //         let mut namespaces: HashMap<String, String> = HashMap::new();
-    //         namespaces.insert(
-    //             "dc".to_string(),
-    //             "http://purl.org/dc/elements/1.1/".to_string(),
-    //         );
-    //         namespaces.insert(
-    //             "content".to_string(),
-    //             "http://purl.org/rss/1.0/modules/content/".to_string(),
-    //         );
-    //         namespaces.insert(
-    //             "atom".to_string(),
-    //             "http://www.w3.org/2005/Atom".to_string(),
-    //         );
-    //         namespaces.insert(
-    //             "media".to_string(),
-    //             "http://search.yahoo.com/mrss/".to_string(),
-    //         );
-    //
-    //         let channel: Channel = ChannelBuilder::default()
-    //             .title(config.site.title.clone())
-    //             .description(config.site.description.clone())
-    //             .generator("Staple".to_string())
-    //             .link(result.to_string())
-    //             .items(items)
-    //             .namespaces(namespaces)
-    //             .build()
-    //             .unwrap();
-    //
-    //         std::fs::write(".render/rss.xml", channel.to_string().as_bytes())?;
-    //     }
-    //     Ok(())
-    // }
 
     pub fn copy_statics(&self, config: &Config) -> Result<(), StapleError> {
         let path1 = Path::new(".render");

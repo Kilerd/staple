@@ -24,7 +24,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
             Watcher::new(tx, Duration::from_secs(2)).expect("cannot watch");
 
         result
-            .watch("articles", RecursiveMode::Recursive)
+            .watch("data", RecursiveMode::Recursive)
             .expect("cannot watch articles");
         result
             .watch("templates", RecursiveMode::Recursive)
