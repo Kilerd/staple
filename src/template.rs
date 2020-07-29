@@ -51,7 +51,11 @@ impl Template {
     ) -> Result<(), StapleError> {
         let template = &article.template;
         let url = &article.url;
-        let result = self.tera.render(&template, &article)?;
+
+        let mut context = Context::new();
+        context.insert("page", &article);
+        context.insert("config", config);
+        let result = self.tera.render(&template, &context)?;
         let string = format!(".render{}/index.html", url);
         let path = Path::new(&string).parent();
         if let Some(p) = path {
@@ -69,7 +73,11 @@ impl Template {
     ) -> Result<(), StapleError> {
         let template = &article.template;
         let url = &article.url;
-        let result = self.tera.render(&template, &article)?;
+
+        let mut context = Context::new();
+        context.insert("page", &article);
+        context.insert("config", config);
+        let result = self.tera.render(&template, &context)?;
         let string = format!(".render{}/index.html", url);
 
         let path = Path::new(&string).parent();

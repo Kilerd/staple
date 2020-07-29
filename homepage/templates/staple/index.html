@@ -18,7 +18,12 @@
         <a href="Changelog.html">Changelog</a>
         <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
     </nav>
-    {{content.html | safe }}
+    <div>
+        {{ page.content.html | safe }}
+    </div>
+    <pre><code>{{ __tera_context | escape  | safe }}</code></pre>
+
+
 
 </div>
 </body>

@@ -12,7 +12,7 @@ pub enum StapleError {
     #[error("config error {}", .0.to_string())]
     ConfigError(#[from] toml::de::Error),
 
-    #[error("render error {0}")]
+    #[error("render error {}", .0.to_string())]
     RenderError(#[from] tera::Error),
 
     #[error("theme '{0}' does not exist")]
