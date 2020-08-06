@@ -50,7 +50,11 @@ impl Template {
         article: JsonFileData,
     ) -> Result<(), StapleError> {
         let template = &article.template;
-        let url = &article.url;
+        let url = if article.url.starts_with("/") {
+            article.url.clone()
+        } else {
+            format!("/{}", &article.url)
+        };
 
         let mut context = Context::new();
         context.insert("page", &article);
@@ -72,7 +76,11 @@ impl Template {
         article: MarkdownFileData,
     ) -> Result<(), StapleError> {
         let template = &article.template;
-        let url = &article.url;
+        let url = if article.url.starts_with("/") {
+            article.url.clone()
+        } else {
+            format!("/{}", &article.url)
+        };
 
         let mut context = Context::new();
         context.insert("page", &article);

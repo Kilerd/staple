@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 use std::fs::File;
 use std::io::Write;
 
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset, Local, Utc};
 use itertools::Itertools;
 use pest::Parser;
 use pulldown_cmark::{Event, Options};
@@ -15,11 +15,9 @@ use crate::data::MarkdownContent;
 use crate::error::StapleError;
 
 
-
 #[derive(Parser)]
 #[grammar = "data/article.pest"] // relative to src
 struct ArticleParser;
-
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -38,12 +36,13 @@ pub struct MarkdownFileData {
     pub title: String,
     pub template: String,
     pub datetime: DateTime<FixedOffset>,
+    #[serde(default)]
+    pub draw: bool,
     // todo support multiple layers of data
     pub data: HashMap<String, String>,
     pub content: MarkdownContent,
-    pub description: Option<MarkdownContent>
+    pub description: Option<MarkdownContent>,
 }
-
 
 
 impl MarkdownFileData {
@@ -104,13 +103,16 @@ impl MarkdownFileData {
             filename: file.to_string(),
             reason: "template does not exist in article's metadata".to_string(),
         })?;
+
+        let draw = metas.remove("draw").map(|value| value.to_lowercase().eq("true")).unwrap_or(false);
+
         let option_date = metas
             .remove("datetime")
             .ok_or(StapleError::ArticleError {
                 filename: file.to_string(),
                 reason: "datetime does not exist in article's metadata".to_string(),
             })
-            .map(|raw| DateTime::parse_from_str(&raw, "%Y-%m-%d %H:%M:%S %z"))?
+            .map(|raw| DateTime::parse_from_rfc3339(&raw))?
             .map_err(|e| StapleError::ArticleError {
                 filename: file.to_string(),
                 reason: format!("parse date error {}", e),
@@ -131,29 +133,26 @@ impl MarkdownFileData {
             description,
             content: MarkdownContent::new(content),
             data: metas,
+            draw,
         })
     }
 
-    pub fn new_template(
-        url: &str,
-        title: &Option<String>,
-        tags: &Vec<String>,
-    ) -> Result<(), StapleError> {
-        let url = url.to_string();
-        let url_for_text = url.replace(" ", "-");
+    pub fn create(title: String, url: String, template: String, draw: bool) -> Result<(), StapleError> {
+        let offset = FixedOffset::east(60 * 60 * 8);
+        let datetime = Utc::now().with_timezone(&offset).to_rfc3339();
 
-        let tags = tags.join(", ");
+        let mut content = String::new();
 
-        let title = title.as_ref().unwrap_or(&url);
-        let path = Path::new("articles");
-        let mut result = File::create(path.join(format!("{}.md", url_for_text)))?;
-        result.write(&format!(" - title = {}{}", title, LINE_ENDING).as_bytes())?;
-        result.write(&format!(" - url = {}{}", &url_for_text, LINE_ENDING).as_bytes())?;
-        result.write(&format!(" - tags = {}{}", tags, LINE_ENDING).as_bytes())?;
-        let dt: DateTime<Local> = Local::now();
-        let format1 = dt.format("%Y-%m-%d %H:%M:%S %z").to_string();
-        result.write(&format!(" - datetime = {}{}", format1, LINE_ENDING).as_bytes())?;
-        result.write(LINE_ENDING.as_bytes())?;
+        content.push_str(&format!(" - title = {}{}", &title, LINE_ENDING));
+        content.push_str(&format!(" - url = {}{}", &url, LINE_ENDING));
+        content.push_str(&format!(" - datetime = {}{}", datetime, LINE_ENDING));
+        content.push_str(&format!(" - template = {}{}", template, LINE_ENDING));
+        content.push_str(&format!(" - draw = {}{}", draw, LINE_ENDING));
+        content.push_str(LINE_ENDING);
+
+        let file_name = title.trim().replace(" ", "-").replace("_", "-");
+        let file_path = format!("data/{}.md", &file_name);
+        std::fs::write(file_path, content)?;
         Ok(())
     }
 }

@@ -9,6 +9,7 @@ utc_offset = 800
 theme = "staple"
 domain = "https://kilerd.github.io"
 domain_root = "staple"
+default_template = "article.html"
 
 [[statics]]
 from = "CNAME"

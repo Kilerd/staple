@@ -21,6 +21,7 @@ impl App {
 
     pub fn render(self) -> Result<(), StapleError> {
         let vec = self.load_all_data()?;
+        dbg!(&vec);
         self.template.render(vec, &self.config)
     }
 

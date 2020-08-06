@@ -28,6 +28,7 @@ pub mod init;
 pub mod new;
 pub mod page;
 pub mod list;
+pub mod add;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
@@ -49,7 +50,18 @@ pub enum StapleCommand {
     Build,
     /// start the develop server listening on local with live-reload
     Develop,
-
+    /// add new article
+    Add {
+        title: String,
+        #[structopt(long)]
+        url: Option<String>,
+        #[structopt(long)]
+        draw: bool,
+        #[structopt(long, short)]
+        template: Option<String>,
+        #[structopt(long)]
+        data: bool,
+    },
 
     /// show all information of staple project
     List,
@@ -65,6 +77,10 @@ impl StapleCommand {
             StapleCommand::List => {
                 StapleCommand::check_config_file_exist()?;
                 list::command()
+            }
+
+            StapleCommand::Add { title, url, draw, template, data } => {
+                add::add(title, url, template, draw, data)
             }
         }
     }

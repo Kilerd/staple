@@ -75,6 +75,7 @@ pub struct Site {
     pub theme: String,
     pub domain: String,
     pub domain_root: String,
+    pub default_template: String,
 }
 
 impl Default for Site {
@@ -89,7 +90,8 @@ impl Default for Site {
             utc_offset: 800,
             theme: "rubble".to_string(),
             domain: "".to_string(),
-            domain_root: "".to_string()
+            domain_root: "".to_string(),
+            default_template: "article.html".to_string(),
         }
     }
 }

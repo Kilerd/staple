@@ -65,7 +65,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
         }
         std::thread::sleep(Duration::from_secs(1));
     });
-
+    println!("developing server is listening on http://127.0.0.1:8000");
     sys.run().expect("");
     Ok(())
 }

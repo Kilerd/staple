@@ -1,35 +1,42 @@
 use serde::{Serialize, Deserialize};
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Local, Utc};
 
 use std::collections::HashMap;
 use serde_json::Value;
 use crate::error::StapleError;
 use crate::data::MarkdownContent;
 use crate::constants::DESCRIPTION_SEPARATOR;
+use chrono::offset::TimeZone;
+use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonFileData {
     pub url: String,
     pub title: String,
     pub template: String,
+    #[serde(default)]
+    pub draw: bool,
     pub datetime: DateTime<FixedOffset>,
     pub data: HashMap<String, Value>,
     pub description: Option<MarkdownContent>,
     pub content: MarkdownContent,
 }
 
+#[doc(hidden)]
+#[derive(Debug, Serialize, Deserialize)]
+struct InnerData {
+    pub title: String,
+    pub url: String,
+    pub template: String,
+    #[serde(default)]
+    pub draw: bool,
+    pub datetime: DateTime<FixedOffset>,
+    pub data: HashMap<String, Value>,
+    pub content: String,
+}
+
 impl JsonFileData {
     pub fn from_str(content: &str) -> Result<Self, StapleError> {
-        #[derive(Debug, Serialize, Deserialize)]
-        struct InnerData {
-            pub url: String,
-            pub title: String,
-            pub template: String,
-            pub datetime: DateTime<FixedOffset>,
-            pub data: HashMap<String, Value>,
-            pub content: String,
-        }
-
         let data = serde_json::from_str::<InnerData>(content)?;
         let description = if data.content.contains(DESCRIPTION_SEPARATOR) {
             let content_split: Vec<&str> = content.splitn(2, DESCRIPTION_SEPARATOR).collect();
@@ -41,10 +48,31 @@ impl JsonFileData {
             url: data.url,
             title: data.title,
             template: data.template,
+            draw: data.draw,
             datetime: data.datetime,
             data: data.data,
             description,
             content: MarkdownContent::new(data.content),
         })
+    }
+
+    pub fn create(title: String, url: String, template: String, draw: bool) -> Result<(), StapleError> {
+        let offset = FixedOffset::east(60 * 60 * 8);
+        let data = InnerData {
+            title: title.clone(),
+            url,
+            template,
+            draw,
+            datetime: Utc::now().with_timezone(&offset),
+            data: HashMap::new(),
+            content: "".to_string(),
+        };
+
+        let string = serde_json::to_string_pretty(&data)?;
+
+        let file_name = title.trim().replace(" ", "-").replace("_", "-");
+        let file_path = format!("data/{}.json", &file_name);
+        std::fs::write(file_path, string)?;
+        Ok(())
     }
 }
