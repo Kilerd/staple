@@ -90,6 +90,13 @@ impl DataFile {
             }
         }
     }
+
+    pub fn is_draw(&self) -> bool {
+        match self {
+            DataFile::MarkdownFile(markdown) => markdown.draw,
+            DataFile::JsonFile(json) => json.draw
+        }
+    }
 }
 
 

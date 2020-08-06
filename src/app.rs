@@ -1,4 +1,4 @@
-use crate::{ config::Config, error::StapleError, template::Template};
+use crate::{config::Config, error::StapleError, template::Template};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -20,8 +20,10 @@ impl App {
     }
 
     pub fn render(self) -> Result<(), StapleError> {
-        let vec = self.load_all_data()?;
-        dbg!(&vec);
+        let vec = self.load_all_data()?
+            .into_iter()
+            .filter(|article| !article.is_draw())
+            .collect();
         self.template.render(vec, &self.config)
     }
 
