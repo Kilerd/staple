@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 
 pub(crate) fn develop() -> Result<(), StapleError> {
     StapleCommand::check_config_file_exist()?;
-    crate::command::build::build()?;
+    crate::command::build::build(true)?;
 
     let has_new_file_event = Arc::new(AtomicBool::new(false));
     let _is_building = Arc::new(Mutex::new(false));
@@ -48,7 +48,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
                     }
                     _ => {}
                 },
-                Err(e) => println!("watch error: {:?}", e),
+                Err(e) => info!("watch error: {:?}", e),
             }
         }
     });
@@ -59,13 +59,17 @@ pub(crate) fn develop() -> Result<(), StapleError> {
             file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);
         if need_build {
             info!("build app");
-            println!("build stage is triggered by file event.");
-            crate::command::build::build();
+            info!("build stage is triggered by file event.");
+            let result1 = crate::command::build::build(true);
+            match result1 {
+                Ok(_) => info!("build successfully"),
+                Err(e) => error!("fail to build due to {}", e),
+            }
             addr.do_send(WsEvent::Refresh);
         }
         std::thread::sleep(Duration::from_secs(1));
     });
-    println!("developing server is listening on http://127.0.0.1:8000");
+    info!("developing server is listening on http://127.0.0.1:8000");
     sys.run().expect("");
     Ok(())
 }

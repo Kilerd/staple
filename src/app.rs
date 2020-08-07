@@ -1,30 +1,35 @@
 use crate::{config::Config, error::StapleError, template::Template};
-use chrono::{DateTime, FixedOffset};
-use serde::{Deserialize, Serialize};
-use std::path::Path;
+
 use crate::data::{DataFile, JsonFileData, MarkdownFileData};
+use std::path::Path;
 
 #[derive(Debug)]
 pub struct App {
     pub(crate) config: Config,
     pub(crate) template: Template,
+    is_develop_mode: bool,
 }
 
-
 impl App {
-    pub fn load() -> Result<Self, StapleError> {
+    pub fn load(develop: bool) -> Result<Self, StapleError> {
         let config = Config::load_from_file()?;
         debug!("init template");
         let template = Template::new(config.get_theme()?);
-        Ok(Self { config, template })
+        Ok(Self {
+            config,
+            template,
+            is_develop_mode: develop,
+        })
     }
 
     pub fn render(self) -> Result<(), StapleError> {
-        let vec = self.load_all_data()?
+        let vec = self
+            .load_all_data()?
             .into_iter()
             .filter(|article| !article.is_draw())
             .collect();
-        self.template.render(vec, &self.config)
+        self.template
+            .render(vec, &self.config, self.is_develop_mode)
     }
 
     pub fn load_all_data(&self) -> Result<Vec<DataFile>, StapleError> {

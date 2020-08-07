@@ -48,6 +48,9 @@ here is the content</p>
       }
     ]
   },
+  &quot;develop&quot;: {
+    &quot;live_reload&quot;: &quot;&lt;script&gt;\n\n    function websocket_connect() {\n        let webSocket = new WebSocket(\&quot;ws:&#x2F;&#x2F;localhost:8000&#x2F;notifier\&quot;);\n        webSocket.onopen = function () {\n            webSocket.send(\&quot;Connecting...\&quot;);\n            console.log(\&quot;ws connection...\&quot;);\n        };\n        webSocket.onmessage = function (event) {\n            let data = event.data;\n            console.log(\&quot;ws get event: \&quot;, data);\n            if (data === \&quot;refresh\&quot;) {\n                window.location.reload();\n            }\n        };\n        webSocket.onclose = function (e) {\n            console.log(\&quot;ws disconnected.\&quot;, e);\n            console.log(\&quot;trying to reconnect servere 5 second later\&quot;);\n            setTimeout(websocket_connect, 5000);\n        };\n    }\n\n    if (\&quot;WebSocket\&quot; in window) {\n        websocket_connect();\n\n    } else {\n        console.log(\&quot;your browser does not support websocket\&quot;);\n    }\n&lt;&#x2F;script&gt;&quot;
+  },
   &quot;page&quot;: {
     &quot;content&quot;: {
       &quot;html&quot;: &quot;&lt;p&gt;#hello staple\nhere is the content&lt;&#x2F;p&gt;\n&quot;,
@@ -65,6 +68,7 @@ here is the content</p>
     &quot;draw&quot;: false,
     &quot;template&quot;: &quot;index.html&quot;,
     &quot;title&quot;: &quot;首页&quot;,
+    &quot;type&quot;: &quot;JsonFile&quot;,
     &quot;url&quot;: &quot;&#x2F;&quot;
   }
 }</code></pre>

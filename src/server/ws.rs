@@ -3,7 +3,7 @@ use actix::{prelude::*, Actor, ActorContext, Addr, AsyncContext, Context, Handle
 use actix_web_actors::ws;
 use std::collections::HashSet;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 #[derive(Message)]
 pub enum WsEvent {
@@ -63,7 +63,7 @@ impl MyWebSocket {
             // check client heartbeats
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
                 // heartbeat timed out
-                println!("Websocket Client heartbeat failed, disconnecting!");
+                info!("Websocket Client heartbeat failed, disconnecting!");
 
                 // stop actor
                 ctx.stop();

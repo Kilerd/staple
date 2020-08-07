@@ -14,7 +14,7 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
     let check_files = vec![STAPLE_CONFIG_FILE, "articles", "templates"];
     for path in check_files {
         if buf.join(path).exists() {
-            println!(
+            info!(
                 "{} '{}' existed, please delete it and then continue",
                 style("ERROR").red(),
                 style(path).blue()
@@ -29,6 +29,6 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
     std::fs::create_dir(buf.join("pages"))?;
     std::fs::create_dir(buf.join("templates"))?;
 
-    println!("init");
+    info!("init");
     Ok(())
 }

@@ -1,34 +1,18 @@
-use std::{
-    path::Path,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering}, Mutex,
-    },
-    time::{Duration, Instant},
-};
-use std::default::Default;
+use std::path::Path;
 
-use console::style;
-use file_lock::FileLock;
-use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use structopt::StructOpt;
 
-use crate::{
-    app::App,
-    error::StapleError,
-    server::{Server, ws::WsEvent},
-};
-use crate::config::Config;
-use crate::constants::STAPLE_CONFIG_FILE;
-use crate::template::Template;
+use crate::error::StapleError;
 
+use crate::constants::STAPLE_CONFIG_FILE;
+
+pub mod add;
 pub mod build;
 pub mod develop;
 pub mod init;
+pub mod list;
 pub mod new;
 pub mod page;
-pub mod list;
-pub mod add;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "Staple")]
@@ -72,16 +56,20 @@ impl StapleCommand {
         match self {
             StapleCommand::New { path, title, force } => new::new(path, title, force),
             StapleCommand::Init => init::init("."),
-            StapleCommand::Build => build::build(),
+            StapleCommand::Build => build::build(false),
             StapleCommand::Develop => develop::develop(),
             StapleCommand::List => {
                 StapleCommand::check_config_file_exist()?;
                 list::command()
             }
 
-            StapleCommand::Add { title, url, draw, template, data } => {
-                add::add(title, url, template, draw, data)
-            }
+            StapleCommand::Add {
+                title,
+                url,
+                draw,
+                template,
+                data,
+            } => add::add(title, url, template, draw, data),
         }
     }
 
@@ -90,7 +78,7 @@ impl StapleCommand {
     }
 
     fn check_config_file_exist() -> Result<(), StapleError> {
-        if Path::new(STAPLE_CONFIG_FILE).exists() {
+        if StapleCommand::config_file_exist() {
             Ok(())
         } else {
             Err(StapleError::ConfigNotFound)

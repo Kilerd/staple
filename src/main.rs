@@ -5,6 +5,8 @@ extern crate pest_derive;
 extern crate log;
 
 use crate::command::StapleCommand;
+use env_logger::Env;
+use std::io::Write;
 use std::process::exit;
 use structopt::StructOpt;
 
@@ -19,12 +21,17 @@ mod template;
 mod data;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    pretty_env_logger::init_timed();
+    env_logger::from_env(Env::default().default_filter_or("info"))
+        .format(|buf, record| {
+            let level = buf.default_styled_level(record.level());
+            writeln!(buf, "{:>5} {}", level, record.args())
+        })
+        .init();
 
     let opt: StapleCommand = StapleCommand::from_args();
     let result = opt.run();
     if let Err(e) = result {
-        eprintln!("Error: {}", e);
+        error!("Error: {}", e);
         exit(1);
     }
     Ok(())

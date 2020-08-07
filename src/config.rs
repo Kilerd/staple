@@ -1,5 +1,4 @@
-use std::{collections::HashMap, fs::File, io::Read, path::Path};
-use std::ops::Deref;
+use std::{collections::HashMap, path::Path};
 
 use serde_derive::{Deserialize, Serialize};
 use toml::Value;

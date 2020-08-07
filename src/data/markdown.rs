@@ -1,12 +1,7 @@
-use std::{collections::HashMap, path::Path};
-use std::fs::File;
-use std::io::Write;
+use std::collections::HashMap;
 
-use chrono::{DateTime, FixedOffset, Local, Utc};
-use itertools::Itertools;
+use chrono::{DateTime, FixedOffset, Utc};
 use pest::Parser;
-use pulldown_cmark::{Event, Options};
-use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::constants::DESCRIPTION_SEPARATOR;
@@ -14,11 +9,9 @@ use crate::constants::LINE_ENDING;
 use crate::data::MarkdownContent;
 use crate::error::StapleError;
 
-
 #[derive(Parser)]
 #[grammar = "data/article.pest"] // relative to src
 struct ArticleParser;
-
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ArticleMeta {
@@ -44,27 +37,7 @@ pub struct MarkdownFileData {
     pub description: Option<MarkdownContent>,
 }
 
-
 impl MarkdownFileData {
-    pub fn load_all_article() -> Result<Vec<MarkdownFileData>, StapleError> {
-        let path = Path::new("data");
-        let mut articles = vec![];
-        let dir = path.read_dir()?;
-
-        for path in dir {
-            if let Ok(p) = path {
-                let file_path = p.path();
-                let is_md_file =
-                    file_path.extension().map(|extension| extension.eq("md")) == Some(true);
-                if is_md_file && file_path.is_file() {
-                    articles.push(MarkdownFileData::load(file_path.to_str().unwrap())?)
-                }
-            }
-        }
-        // articles.sort_by(|one, other| other.meta.date.cmp(&one.meta.date));
-        Ok(articles)
-    }
-
     pub fn load(file: &str) -> Result<MarkdownFileData, StapleError> {
         debug!("load article {}", &file);
         let string = std::fs::read_to_string(file)?;
@@ -104,7 +77,10 @@ impl MarkdownFileData {
             reason: "template does not exist in article's metadata".to_string(),
         })?;
 
-        let draw = metas.remove("draw").map(|value| value.to_lowercase().eq("true")).unwrap_or(false);
+        let draw = metas
+            .remove("draw")
+            .map(|value| value.to_lowercase().eq("true"))
+            .unwrap_or(false);
 
         let option_date = metas
             .remove("datetime")
@@ -137,7 +113,12 @@ impl MarkdownFileData {
         })
     }
 
-    pub fn create(title: String, url: String, template: String, draw: bool) -> Result<(), StapleError> {
+    pub fn create(
+        title: String,
+        url: String,
+        template: String,
+        draw: bool,
+    ) -> Result<(), StapleError> {
         let offset = FixedOffset::east(60 * 60 * 8);
         let datetime = Utc::now().with_timezone(&offset).to_rfc3339();
 
@@ -156,5 +137,3 @@ impl MarkdownFileData {
         Ok(())
     }
 }
-
-

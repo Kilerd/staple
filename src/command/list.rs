@@ -2,9 +2,9 @@ use crate::app::App;
 use crate::error::StapleError;
 
 pub(crate) fn command() -> Result<(), StapleError> {
-    let result = App::load()?;
+    let result = App::load(false)?;
 
-    println!("Project Name: {}", result.config.site.title);
+    info!("Project Name: {}", result.config.site.title);
 
     Ok(())
 }

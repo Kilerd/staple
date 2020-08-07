@@ -1,13 +1,11 @@
-use serde::{Serialize, Deserialize};
-use chrono::{DateTime, FixedOffset, Local, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
+use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
-use serde_json::Value;
-use crate::error::StapleError;
-use crate::data::MarkdownContent;
 use crate::constants::DESCRIPTION_SEPARATOR;
-use chrono::offset::TimeZone;
-use std::path::Path;
+use crate::data::MarkdownContent;
+use crate::error::StapleError;
+use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JsonFileData {
@@ -56,7 +54,12 @@ impl JsonFileData {
         })
     }
 
-    pub fn create(title: String, url: String, template: String, draw: bool) -> Result<(), StapleError> {
+    pub fn create(
+        title: String,
+        url: String,
+        template: String,
+        draw: bool,
+    ) -> Result<(), StapleError> {
         let offset = FixedOffset::east(60 * 60 * 8);
         let data = InnerData {
             title: title.clone(),

@@ -1,12 +1,18 @@
-use crate::error::StapleError;
-use crate::data::{JsonFileData, MarkdownFileData};
 use crate::app::App;
+use crate::data::{JsonFileData, MarkdownFileData};
+use crate::error::StapleError;
 
-pub fn add(title: String, url: Option<String>, template: Option<String>, draw: bool, data: bool) -> Result<(), StapleError> {
-    let app = App::load()?;
+pub fn add(
+    title: String,
+    url: Option<String>,
+    template: Option<String>,
+    draw: bool,
+    data: bool,
+) -> Result<(), StapleError> {
+    let app = App::load(false)?;
     let url = url.unwrap_or_else(|| title.trim().replace(" ", "-").replace("_", "-"));
     let template = template.unwrap_or(app.config.site.default_template);
-    println!("{} {} {} {} {}", title, url, template, draw, data);
+    info!("{} {} {} {} {}", title, url, template, draw, data);
 
     if data {
         // new json file
