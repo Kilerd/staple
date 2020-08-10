@@ -32,9 +32,9 @@ impl MarkdownContent {
         let options = Options::all();
         let parser = pulldown_cmark::Parser::new_ext(&raw, options).flat_map(|event| match event {
             Event::Text(text) => {
-                let mut text_chars = text.as_bytes().into_iter();
+                let mut text_chars = text.as_bytes().iter();
                 let mut events = vec![];
-                let re = Regex::new(r#"\{(?P<title>[^}]+)\}\((?P<ruby>[^\)]+)\)"#).unwrap();
+                let re = Regex::new(r#"\{(?P<title>[^}]+)}\((?P<ruby>[^)]+)\)"#).unwrap();
                 let mut last_end_index = 0;
                 for captures in re.captures_iter(&text) {
                     let ruby_group = captures.get(0).unwrap();
@@ -46,7 +46,7 @@ impl MarkdownContent {
                         let ruby_prefix_content: Vec<u8> = text_chars
                             .by_ref()
                             .take(ruby_group_start - last_end_index)
-                            .map(|i| *i)
+                            .copied()
                             .collect();
                         let string = String::from_utf8(ruby_prefix_content).unwrap();
                         events.push(Event::Text(string.into()));
@@ -62,7 +62,7 @@ impl MarkdownContent {
                     events.push(Event::Html("</ruby>".into()));
                 }
                 if last_end_index < text.len() {
-                    let rest: Vec<u8> = text_chars.map(|i| *i).collect();
+                    let rest: Vec<u8> = text_chars.copied().collect();
                     let rest = String::from_utf8(rest).unwrap();
                     events.push(Event::Text(rest.into()));
                 }
@@ -101,7 +101,7 @@ impl DataFile {
             DataFile::MarkdownFile(data) => &data.url,
         };
 
-        if url.starts_with("/") {
+        if url.starts_with('/') {
             url.clone()
         } else {
             format!("/{}", &url)

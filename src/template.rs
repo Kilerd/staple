@@ -27,13 +27,13 @@ pub struct RenderData<'a> {
     page: DataFile,
     config: &'a Config,
     develop: &'a DevelopData,
-    pages: &'a Vec<PageInfo>,
+    pages: &'a [PageInfo],
 }
 
 impl<'a> RenderData<'a> {
     pub fn new(
         page: DataFile,
-        pages: &'a Vec<PageInfo>,
+        pages: &'a [PageInfo],
         config: &'a Config,
         develop: &'a DevelopData,
     ) -> Self {
@@ -80,11 +80,11 @@ impl Template {
         Ok(())
     }
 
-    pub fn render_article(
+    pub fn render_article<'a>(
         &self,
         config: &Config,
         article: &PageInfo,
-        articles: &Vec<PageInfo>,
+        articles: &'a [PageInfo],
         is_develop_mode: bool,
     ) -> Result<(), StapleError> {
         let debug_data = DevelopData::new(is_develop_mode);

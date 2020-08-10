@@ -7,9 +7,9 @@ use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, Mutex,
+        Arc,
     },
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 pub(crate) fn develop() -> Result<(), StapleError> {
@@ -17,7 +17,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
     crate::command::build::build(true)?;
 
     let has_new_file_event = Arc::new(AtomicBool::new(false));
-    let _is_building = Arc::new(Mutex::new(false));
+    let _is_building = Arc::new(AtomicBool::new(false));
 
     let (addr, sys) = Server::start();
 
@@ -37,10 +37,6 @@ pub(crate) fn develop() -> Result<(), StapleError> {
             .watch("Staple.toml", RecursiveMode::Recursive)
             .expect("cannot watch articles");
 
-        //                Ok(sys.run().expect("wrong on actix system run"))
-        let _instant = Arc::new(AtomicBool::new(false));
-        let _instant1 = Instant::now();
-
         // 有文件事件来的时候就把 `should_update_flag` 设置为 true
         // 循环监听，如果是true 就 build，完成后休眠100ms， build 之前先设置标识为为 false
         loop {
@@ -57,7 +53,7 @@ pub(crate) fn develop() -> Result<(), StapleError> {
         }
     });
 
-    let file_event_flag_for_builder = has_new_file_event.clone();
+    let file_event_flag_for_builder = has_new_file_event;
     let _handle = std::thread::spawn(move || loop {
         let need_build =
             file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);

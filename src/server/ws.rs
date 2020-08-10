@@ -88,12 +88,9 @@ impl Handler<WsEvent> for MyWebSocket {
     type Result = ();
 
     fn handle(&mut self, msg: WsEvent, ctx: &mut Self::Context) -> Self::Result {
-        match msg {
-            WsEvent::Refresh => {
-                debug!("listener receive refresh command, send refresh to client");
-                ctx.text("refresh");
-            }
-            _ => {}
+        if let WsEvent::Refresh = msg {
+            debug!("listener receive refresh command, send refresh to client");
+            ctx.text("refresh");
         }
     }
 }
