@@ -6,7 +6,7 @@ use tera::{compile_templates, Tera};
 use serde::Serialize;
 
 use crate::constants::LIVE_RELOAD_CODE;
-use crate::data::DataFile;
+use crate::data::{DataFile, PageInfo};
 
 #[derive(Debug, Serialize)]
 pub struct DevelopData {
@@ -25,12 +25,14 @@ pub struct RenderData<'a> {
     page: DataFile,
     config: &'a Config,
     develop: &'a DevelopData,
+    pages: &'a Vec<PageInfo>,
 }
 
 impl<'a> RenderData<'a> {
-    pub fn new(page: DataFile, config: &'a Config, develop: &'a DevelopData) -> Self {
+    pub fn new(page: DataFile, pages: &'a Vec<PageInfo>, config: &'a Config, develop: &'a DevelopData) -> Self {
         RenderData {
             page,
+            pages,
             config,
             develop,
         }
@@ -51,7 +53,7 @@ impl Template {
 
     pub fn render(
         self,
-        articles: Vec<DataFile>,
+        articles: Vec<PageInfo>,
         config: &Config,
         is_develop_mode: bool,
     ) -> Result<(), StapleError> {
@@ -59,8 +61,8 @@ impl Template {
         std::fs::create_dir(".render")?;
 
         // todo can be parallel rendering
-        for article in articles {
-            self.render_article(config, article, is_develop_mode)?;
+        for article in articles.iter() {
+            self.render_article(config, article, &articles, is_develop_mode)?;
         }
 
         self.copy_statics_folder(config)?;
@@ -74,11 +76,15 @@ impl Template {
     pub fn render_article(
         &self,
         config: &Config,
-        article: DataFile,
+        article: &PageInfo,
+        articles: &Vec<PageInfo>,
         is_develop_mode: bool,
     ) -> Result<(), StapleError> {
         let debug_data = DevelopData::new(is_develop_mode);
-        let data = RenderData::new(article, config, &debug_data);
+
+        let full_article = article.to_full_article()?;
+
+        let data = RenderData::new(full_article, articles, config, &debug_data);
         let result = self.tera.render(data.page.template(), &data)?;
         let url = data.page.url();
         let string = format!(".render{}/index.html", url);

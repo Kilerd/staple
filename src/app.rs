@@ -1,6 +1,6 @@
 use crate::{config::Config, error::StapleError, template::Template};
 
-use crate::data::{DataFile, JsonFileData, MarkdownFileData};
+use crate::data::{JsonFileData, MarkdownFileData, PageInfo, Either};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -26,13 +26,13 @@ impl App {
         let vec = self
             .load_all_data()?
             .into_iter()
-            .filter(|article| !article.is_draw())
+            .filter(|article| !article.draw)
             .collect();
         self.template
             .render(vec, &self.config, self.is_develop_mode)
     }
 
-    pub fn load_all_data(&self) -> Result<Vec<DataFile>, StapleError> {
+    pub fn load_all_data(&self) -> Result<Vec<PageInfo>, StapleError> {
         let path = Path::new("data");
         let mut articles = vec![];
         let dir = path.read_dir()?;
@@ -43,22 +43,46 @@ impl App {
                 if file_path.is_file() {
                     let option = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
+                    let path = file_path.to_str().unwrap().to_string();
                     match option {
                         "md" => {
                             let result2 = MarkdownFileData::load(file_path.to_str().unwrap())?;
-                            articles.push(DataFile::MarkdownFile(result2));
+                            let info = PageInfo {
+                                file: path,
+                                url: result2.url,
+                                title: result2.title,
+                                template: result2.template,
+                                draw: result2.draw,
+                                datetime: result2.datetime,
+                                data: Either::Right(result2.data),
+                                description: result2.description,
+                            };
+                            articles.push(info);
                         }
                         "json" => {
                             let result = std::fs::read_to_string(file_path)?;
                             let data = JsonFileData::from_str(&result)?;
-                            articles.push(DataFile::JsonFile(data));
+
+                            let info = PageInfo {
+                                file: path,
+                                url: data.url,
+                                title: data.title,
+                                template: data.template,
+                                draw: data.draw,
+                                datetime: data.datetime,
+                                data: Either::Left(data.data),
+                                description: data.description,
+
+                            };
+
+                            articles.push(info);
                         }
                         _ => {}
                     }
                 }
             }
         }
-        articles.sort_by(|one, other| one.get_created_time().cmp(other.get_created_time()));
+        articles.sort_by(|one, other| one.datetime.cmp(&other.datetime));
         Ok(articles)
     }
 }

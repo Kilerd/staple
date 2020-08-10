@@ -7,9 +7,21 @@ use serde::{Deserialize, Serialize};
 
 pub use crate::data::json::JsonFileData;
 pub use crate::data::markdown::MarkdownFileData;
+use std::collections::HashMap;
+use serde_json::Value;
+use std::path::Path;
+use crate::error::StapleError;
 
 mod json;
 mod markdown;
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+pub enum Either<A, B> {
+    Left(A),
+    Right(B),
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MarkdownContent {
@@ -79,20 +91,6 @@ pub enum DataFile {
 }
 
 impl DataFile {
-    pub fn get_created_time(&self) -> &DateTime<FixedOffset> {
-        match &self {
-            DataFile::JsonFile(data) => &data.datetime,
-            DataFile::MarkdownFile(data) => &data.datetime,
-        }
-    }
-
-    pub fn is_draw(&self) -> bool {
-        match self {
-            DataFile::MarkdownFile(markdown) => markdown.draw,
-            DataFile::JsonFile(json) => json.draw,
-        }
-    }
-
     pub fn template(&self) -> &str {
         match &self {
             DataFile::JsonFile(data) => &data.template,
@@ -113,6 +111,37 @@ impl DataFile {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PageInfo {
+    pub file: String,
+    pub url: String,
+    pub title: String,
+    pub template: String,
+    #[serde(default)]
+    pub draw: bool,
+    pub datetime: DateTime<FixedOffset>,
+    pub data: Either<HashMap<String, Value>, HashMap<String, String>>,
+    pub description: Option<MarkdownContent>,
+}
+
+impl PageInfo {
+    pub fn to_full_article(&self) -> Result<DataFile, StapleError> {
+        let path = Path::new(&self.file);
+        let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        match extension {
+            "md" => {
+                MarkdownFileData::load(path.to_str().unwrap()).map(DataFile::MarkdownFile)
+            }
+            "json" => {
+                let result = std::fs::read_to_string(path)?;
+                JsonFileData::from_str(&result).map(DataFile::JsonFile)
+            }
+            _ => { unreachable!() }
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod test {
