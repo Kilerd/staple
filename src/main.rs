@@ -6,8 +6,7 @@ extern crate log;
 
 use crate::command::StapleCommand;
 use env_logger::Env;
-use std::io::Write;
-use std::process::exit;
+use std::{io::Write, process::exit};
 use structopt::StructOpt;
 
 mod app;

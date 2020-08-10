@@ -1,9 +1,7 @@
 use crate::constants::{CLIENT_TIMEOUT, HEARTBEAT_INTERVAL};
 use actix::{prelude::*, Actor, ActorContext, Addr, AsyncContext, Context, Handler, StreamHandler};
 use actix_web_actors::ws;
-use std::collections::HashSet;
-use std::sync::Arc;
-use std::time::Instant;
+use std::{collections::HashSet, sync::Arc, time::Instant};
 
 #[derive(Message)]
 pub enum WsEvent {

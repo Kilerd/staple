@@ -1,9 +1,7 @@
 use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::constants::DESCRIPTION_SEPARATOR;
-use crate::data::MarkdownContent;
-use crate::error::StapleError;
+use crate::{constants::DESCRIPTION_SEPARATOR, data::MarkdownContent, error::StapleError};
 use serde_json::Value;
 use std::collections::HashMap;
 

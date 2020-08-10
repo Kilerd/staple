@@ -5,8 +5,10 @@ use tera::{compile_templates, Tera};
 
 use serde::Serialize;
 
-use crate::constants::LIVE_RELOAD_CODE;
-use crate::data::{DataFile, PageInfo};
+use crate::{
+    constants::LIVE_RELOAD_CODE,
+    data::{DataFile, PageInfo},
+};
 
 #[derive(Debug, Serialize)]
 pub struct DevelopData {
@@ -29,7 +31,12 @@ pub struct RenderData<'a> {
 }
 
 impl<'a> RenderData<'a> {
-    pub fn new(page: DataFile, pages: &'a Vec<PageInfo>, config: &'a Config, develop: &'a DevelopData) -> Self {
+    pub fn new(
+        page: DataFile,
+        pages: &'a Vec<PageInfo>,
+        config: &'a Config,
+        develop: &'a DevelopData,
+    ) -> Self {
         RenderData {
             page,
             pages,

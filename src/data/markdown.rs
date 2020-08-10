@@ -4,10 +4,11 @@ use chrono::{DateTime, FixedOffset, Utc};
 use pest::Parser;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::constants::DESCRIPTION_SEPARATOR;
-use crate::constants::LINE_ENDING;
-use crate::data::MarkdownContent;
-use crate::error::StapleError;
+use crate::{
+    constants::{DESCRIPTION_SEPARATOR, LINE_ENDING},
+    data::MarkdownContent,
+    error::StapleError,
+};
 
 #[derive(Parser)]
 #[grammar = "data/article.pest"] // relative to src

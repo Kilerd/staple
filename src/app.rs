@@ -1,6 +1,10 @@
-use crate::{config::Config, error::StapleError, template::Template};
+use crate::{
+    config::Config,
+    data::{Either, JsonFileData, MarkdownFileData, PageInfo},
+    error::StapleError,
+    template::Template,
+};
 
-use crate::data::{JsonFileData, MarkdownFileData, PageInfo, Either};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -72,7 +76,6 @@ impl App {
                                 datetime: data.datetime,
                                 data: Either::Left(data.data),
                                 description: data.description,
-
                             };
 
                             articles.push(info);

@@ -1,6 +1,4 @@
-use crate::config::Config;
-use crate::constants::STAPLE_CONFIG_FILE;
-use crate::error::StapleError;
+use crate::{config::Config, constants::STAPLE_CONFIG_FILE, error::StapleError};
 use console::style;
 use std::path::Path;
 

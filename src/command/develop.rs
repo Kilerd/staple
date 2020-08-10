@@ -1,12 +1,16 @@
-use crate::command::StapleCommand;
-use crate::error::StapleError;
-use crate::server::ws::WsEvent;
-use crate::server::Server;
-use notify::DebouncedEvent as Event;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use crate::{
+    command::StapleCommand,
+    error::StapleError,
+    server::{ws::WsEvent, Server},
+};
+use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
+use std::{
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
+    time::{Duration, Instant},
+};
 
 pub(crate) fn develop() -> Result<(), StapleError> {
     StapleCommand::check_config_file_exist()?;

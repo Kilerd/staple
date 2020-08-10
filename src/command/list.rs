@@ -1,5 +1,4 @@
-use crate::app::App;
-use crate::error::StapleError;
+use crate::{app::App, error::StapleError};
 
 pub(crate) fn command() -> Result<(), StapleError> {
     let result = App::load(false)?;

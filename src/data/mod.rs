@@ -1,15 +1,13 @@
 use chrono::{DateTime, FixedOffset};
 use itertools::Itertools;
-use pulldown_cmark::Event;
-use pulldown_cmark::Options;
+use pulldown_cmark::{Event, Options};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-
-pub use crate::data::json::JsonFileData;
-pub use crate::data::markdown::MarkdownFileData;
-use std::collections::HashMap;
 use serde_json::Value;
-use std::path::Path;
+
+use std::{collections::HashMap, path::Path};
+
+pub use crate::data::{json::JsonFileData, markdown::MarkdownFileData};
 use crate::error::StapleError;
 
 mod json;
@@ -21,7 +19,6 @@ pub enum Either<A, B> {
     Left(A),
     Right(B),
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MarkdownContent {
@@ -130,18 +127,16 @@ impl PageInfo {
         let path = Path::new(&self.file);
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         match extension {
-            "md" => {
-                MarkdownFileData::load(path.to_str().unwrap()).map(DataFile::MarkdownFile)
-            }
+            "md" => MarkdownFileData::load(path.to_str().unwrap()).map(DataFile::MarkdownFile),
+
             "json" => {
                 let result = std::fs::read_to_string(path)?;
                 JsonFileData::from_str(&result).map(DataFile::JsonFile)
             }
-            _ => { unreachable!() }
+            _ => unreachable!(),
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

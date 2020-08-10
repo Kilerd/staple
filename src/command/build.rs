@@ -1,6 +1,4 @@
-use crate::app::App;
-use crate::command::StapleCommand;
-use crate::error::StapleError;
+use crate::{app::App, command::StapleCommand, error::StapleError};
 use file_lock::FileLock;
 
 pub(crate) fn build(develop: bool) -> Result<(), StapleError> {

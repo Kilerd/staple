@@ -1,6 +1,8 @@
-use crate::app::App;
-use crate::data::{JsonFileData, MarkdownFileData};
-use crate::error::StapleError;
+use crate::{
+    app::App,
+    data::{JsonFileData, MarkdownFileData},
+    error::StapleError,
+};
 
 pub fn add(
     title: String,

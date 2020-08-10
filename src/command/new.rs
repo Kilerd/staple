@@ -1,5 +1,4 @@
-use crate::error::StapleError;
-use crate::template::Template;
+use crate::{error::StapleError, template::Template};
 use console::style;
 use std::path::Path;
 
