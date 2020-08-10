@@ -58,7 +58,7 @@ jobs:
       - name: Release assets
         uses: softprops/action-gh-release@v1
         with:
-          files: target/${{ matrix.target }}/release/hello-world-${{ matrix.platform }}.tar.gz
+          files: target/${{ matrix.target }}/release/staple-${{ matrix.platform }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
