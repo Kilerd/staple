@@ -4,7 +4,10 @@ use structopt::StructOpt;
 
 use crate::error::StapleError;
 
-use crate::constants::STAPLE_CONFIG_FILE;
+use crate::{
+    constants::{STAPLE_CONFIG_FILE, STAPLE_LOCK_FILE},
+    util::lock::LockFile,
+};
 
 pub mod add;
 pub mod build;
@@ -73,6 +76,7 @@ impl StapleCommand {
         }
     }
 
+    #[inline]
     fn config_file_exist() -> bool {
         Path::new(STAPLE_CONFIG_FILE).exists()
     }
@@ -83,5 +87,12 @@ impl StapleCommand {
         } else {
             Err(StapleError::ConfigNotFound)
         }
+    }
+
+    fn lock_file() -> Result<LockFile, StapleError> {
+        let lock_file = LockFile::new(STAPLE_LOCK_FILE)?;
+        info!("Preparing to lock file...");
+        lock_file.lock_file()?;
+        Ok(lock_file)
     }
 }

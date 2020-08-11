@@ -16,6 +16,7 @@ mod constants;
 mod error;
 mod server;
 mod template;
+mod util;
 
 mod data;
 

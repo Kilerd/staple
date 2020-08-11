@@ -49,7 +49,7 @@ here is the content</p>
     ]
   },
   &quot;develop&quot;: {
-    &quot;live_reload&quot;: &quot;&lt;script&gt;\n\n    function websocket_connect() {\n        let webSocket = new WebSocket(\&quot;ws:&#x2F;&#x2F;localhost:8000&#x2F;notifier\&quot;);\n        webSocket.onopen = function () {\n            webSocket.send(\&quot;Connecting...\&quot;);\n            console.log(\&quot;ws connection...\&quot;);\n        };\n        webSocket.onmessage = function (event) {\n            let data = event.data;\n            console.log(\&quot;ws get event: \&quot;, data);\n            if (data === \&quot;refresh\&quot;) {\n                window.location.reload();\n            }\n        };\n        webSocket.onclose = function (e) {\n            console.log(\&quot;ws disconnected.\&quot;, e);\n            console.log(\&quot;trying to reconnect servere 5 second later\&quot;);\n            setTimeout(websocket_connect, 5000);\n        };\n    }\n\n    if (\&quot;WebSocket\&quot; in window) {\n        websocket_connect();\n\n    } else {\n        console.log(\&quot;your browser does not support websocket\&quot;);\n    }\n&lt;&#x2F;script&gt;&quot;
+    &quot;live_reload&quot;: &quot;&quot;
   },
   &quot;page&quot;: {
     &quot;content&quot;: {
@@ -128,33 +128,5 @@ here is the content</p>
 
 </div>
 </body>
-<script>
 
-    function websocket_connect() {
-        let webSocket = new WebSocket("ws://localhost:8000/notifier");
-        webSocket.onopen = function () {
-            webSocket.send("Connecting...");
-            console.log("ws connection...");
-        };
-        webSocket.onmessage = function (event) {
-            let data = event.data;
-            console.log("ws get event: ", data);
-            if (data === "refresh") {
-                window.location.reload();
-            }
-        };
-        webSocket.onclose = function (e) {
-            console.log("ws disconnected.", e);
-            console.log("trying to reconnect servere 5 second later");
-            setTimeout(websocket_connect, 5000);
-        };
-    }
-
-    if ("WebSocket" in window) {
-        websocket_connect();
-
-    } else {
-        console.log("your browser does not support websocket");
-    }
-</script>
 </html>

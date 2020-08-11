@@ -9,6 +9,7 @@ pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 pub const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub const STAPLE_CONFIG_FILE: &str = "Staple.toml";
+pub const STAPLE_LOCK_FILE: &str = "Staple.lock";
 
 pub const DESCRIPTION_SEPARATOR: &str = "<!--more-->";
 
