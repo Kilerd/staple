@@ -85,7 +85,7 @@ impl App {
                 }
             }
         }
-        articles.sort_by(|one, other| one.datetime.cmp(&other.datetime));
+        articles.sort_by(|one, other| other.datetime.cmp(&one.datetime));
         Ok(articles)
     }
 }

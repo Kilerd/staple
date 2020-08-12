@@ -14,10 +14,10 @@ pub fn not_field(value: &Value, attributes: &HashMap<String, Value>) -> Result<V
         None => {
             return Err(Error::msg(
                 "The `not_field` filter has to have an `attribute` argument",
-            ))
+            ));
         }
     };
-    let result = dbg!(arr)
+    let result = arr
         .into_iter()
         .filter(|item| {
             let field = item
@@ -31,5 +31,5 @@ pub fn not_field(value: &Value, attributes: &HashMap<String, Value>) -> Result<V
         })
         .collect();
 
-    Ok(dbg!(result))
+    Ok(result)
 }
