@@ -54,7 +54,7 @@ pub struct Template {
 
 impl Template {
     pub fn new(name: String) -> Self {
-        let tera = compile_templates!(&format!("templates/{}/**/*.html", name));
+        let tera = compile_templates!(&format!("templates/{}/**/*.*", name));
         Template { name, tera }
     }
 
