@@ -18,6 +18,22 @@
         <a href="Changelog.html">Changelog</a>
         <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
     </nav>
+
+    <section class="container">
+
+        {% for one_page in pages | not_field(attribute="data.page") %}
+        <section class="article">
+            <p class="mate">{{ one_page.datetime | date(format="%B %d, %Y") }}</p>
+            <a class="title"
+               href="/{{ one_page.url }}">{{ one_page.title }}</a>
+            {% if one_page.description %}
+            <section class="yue desc">
+                {{ one_page.description.html | safe }}
+            </section>
+            {% endif %}
+        </section>
+        {% endfor %}
+    </section>
     <div>
         {{ page.content.html | safe }}
     </div>

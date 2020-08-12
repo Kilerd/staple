@@ -1,7 +1,7 @@
 use crate::{config::Config, error::StapleError};
 
 use std::path::Path;
-use tera::{compile_templates, Tera};
+use tera::{Context, Tera};
 
 use serde::Serialize;
 
@@ -54,7 +54,8 @@ pub struct Template {
 
 impl Template {
     pub fn new(name: String) -> Self {
-        let tera = compile_templates!(&format!("templates/{}/**/*.*", name));
+        let mut tera = Tera::new(&format!("templates/{}/*", name)).unwrap();
+        tera.register_filter("not_field", crate::util::filter::not_field);
         Template { name, tera }
     }
 
@@ -92,7 +93,8 @@ impl Template {
         let full_article = article.to_full_article()?;
 
         let data = RenderData::new(full_article, articles, config, &debug_data);
-        let result = self.tera.render(data.page.template(), &data)?;
+        let context = Context::from_serialize(&data).unwrap();
+        let result = self.tera.render(data.page.template(), &context)?;
         let url = data.page.url();
         let string = format!(".render{}/index.html", url);
         let path = Path::new(&string).parent();

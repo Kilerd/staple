@@ -4,6 +4,7 @@
   "template": "index.html",
   "datetime": "2015-02-18T23:59:60.234567+05:00",
   "data": {
+    "page": true,
     "tags": [
       "test",
       "markdown",
