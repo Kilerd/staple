@@ -11,6 +11,8 @@ pub const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 pub const STAPLE_CONFIG_FILE: &str = "Staple.toml";
 pub const STAPLE_LOCK_FILE: &str = "Staple.lock";
 
+pub const RENDER_FOLDER: &str = ".render";
+
 pub const DESCRIPTION_SEPARATOR: &str = "<!--more-->";
 
 pub const LIVE_RELOAD_CODE: &str = include_str!("../data/live_reload.html");

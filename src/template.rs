@@ -6,7 +6,7 @@ use tera::{Context, Tera};
 use serde::Serialize;
 
 use crate::{
-    constants::LIVE_RELOAD_CODE,
+    constants::{LIVE_RELOAD_CODE, RENDER_FOLDER},
     data::{DataFile, PageInfo},
 };
 
@@ -88,6 +88,7 @@ impl Template {
         articles: &'a [PageInfo],
         is_develop_mode: bool,
     ) -> Result<(), StapleError> {
+        info!("rendering article {}({})", &article.title, &article.url);
         let debug_data = DevelopData::new(is_develop_mode);
 
         let full_article = article.to_full_article()?;
@@ -95,15 +96,16 @@ impl Template {
         let data = RenderData::new(full_article, articles, config, &debug_data);
         let context = Context::from_serialize(&data).unwrap();
         let result = self.tera.render(data.page.template(), &context)?;
-        let url = data.page.url();
-        let string = format!(".render{}/index.html", url);
-        let path = Path::new(&string).parent();
-        if let Some(p) = path {
+        let url = article.output_file_name();
+        let url = &url[1..url.len()];
+        let output_file = Path::new(RENDER_FOLDER).join(url);
+
+        if let Some(p) = output_file.parent() {
             if !p.exists() {
                 std::fs::create_dir_all(p)?;
             }
         }
-        std::fs::write(string, result.as_bytes()).map_err(StapleError::IoError)
+        std::fs::write(output_file, result.as_bytes()).map_err(StapleError::IoError)
     }
 
     fn copy_statics_folder(&self, config: &Config) -> Result<(), StapleError> {

@@ -94,19 +94,6 @@ impl DataFile {
             DataFile::MarkdownFile(data) => &data.template,
         }
     }
-
-    pub fn url(&self) -> String {
-        let url = match &self {
-            DataFile::JsonFile(data) => &data.url,
-            DataFile::MarkdownFile(data) => &data.url,
-        };
-
-        if url.starts_with('/') {
-            url.clone()
-        } else {
-            format!("/{}", &url)
-        }
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -135,6 +122,24 @@ impl PageInfo {
             }
             _ => unreachable!(),
         }
+    }
+
+    pub fn output_file_name(&self) -> String {
+        let url = Path::new(&self.url);
+        let has_extension = url.extension().is_some();
+        let start_with_slash = self.url.starts_with('/');
+        let end_with_slash = self.url.ends_with('/');
+
+        format!(
+            "{}{}{}",
+            if start_with_slash { "" } else { "/" },
+            &self.url,
+            if !has_extension && end_with_slash {
+                "index.html"
+            } else {
+                "/index.html"
+            }
+        )
     }
 }
 
