@@ -1,6 +1,6 @@
 use crate::{
     config::Config,
-    data::{Either, JsonFileData, MarkdownFileData, PageInfo},
+    data::{JsonFileData, MarkdownFileData, PageInfo},
     error::StapleError,
     template::Template,
 };
@@ -58,7 +58,7 @@ impl App {
                                 template: result2.template,
                                 draw: result2.draw,
                                 datetime: result2.datetime,
-                                data: Either::Right(result2.data),
+                                data: result2.data,
                                 description: result2.description,
                             };
                             articles.push(info);
@@ -74,7 +74,7 @@ impl App {
                                 template: data.template,
                                 draw: data.draw,
                                 datetime: data.datetime,
-                                data: Either::Left(data.data),
+                                data: data.data,
                                 description: data.description,
                             };
 

@@ -14,13 +14,6 @@ mod json;
 mod markdown;
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-pub enum Either<A, B> {
-    Left(A),
-    Right(B),
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct MarkdownContent {
     pub markdown: String,
     pub html: String,
@@ -105,7 +98,7 @@ pub struct PageInfo {
     #[serde(default)]
     pub draw: bool,
     pub datetime: DateTime<FixedOffset>,
-    pub data: Either<HashMap<String, Value>, HashMap<String, String>>,
+    pub data: HashMap<String, Value>,
     pub description: Option<MarkdownContent>,
 }
 

@@ -33,7 +33,7 @@ pub struct MarkdownFileData {
     #[serde(default)]
     pub draw: bool,
     // todo support multiple layers of data
-    pub data: HashMap<String, String>,
+    pub data: HashMap<String, serde_json::Value>,
     pub content: MarkdownContent,
     pub description: Option<MarkdownContent>,
 }
@@ -101,6 +101,16 @@ impl MarkdownFileData {
         } else {
             None
         };
+        let extra_json_data = metas
+            .into_iter()
+            .map(|(key, value)| {
+                let json_value = match serde_json::from_str::<serde_json::Value>(&value) {
+                    Ok(val) => val,
+                    Err(_) => serde_json::Value::String(value),
+                };
+                (key, json_value)
+            })
+            .collect();
 
         Ok(MarkdownFileData {
             url,
@@ -109,7 +119,7 @@ impl MarkdownFileData {
             datetime: option_date,
             description,
             content: MarkdownContent::new(content),
-            data: metas,
+            data: extra_json_data,
             draw,
         })
     }

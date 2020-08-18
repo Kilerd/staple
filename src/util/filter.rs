@@ -1,4 +1,4 @@
-use crate::data::{Either, PageInfo};
+use crate::data::PageInfo;
 use chrono::{FixedOffset, Utc};
 use std::collections::HashMap;
 use tera::{Error, Value};
@@ -64,7 +64,7 @@ pub fn page_detail(args: &HashMap<String, Value>) -> Result<Value, tera::Error> 
         template: "".to_string(),
         draw: false,
         datetime: Utc::now().with_timezone(&FixedOffset::east(60 * 60 * 8)),
-        data: Either::Left(HashMap::new()),
+        data: HashMap::new(),
         description: None,
     }
     .to_full_article();
