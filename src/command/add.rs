@@ -14,7 +14,6 @@ pub fn add(
     let app = App::load(false)?;
     let url = url.unwrap_or_else(|| title.trim().replace(" ", "-").replace("_", "-"));
     let template = template.unwrap_or(app.config.site.default_template);
-    info!("{} {} {} {} {}", title, url, template, draw, data);
 
     if data {
         // new json file
