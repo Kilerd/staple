@@ -127,7 +127,9 @@ impl PageInfo {
             "{}{}{}",
             if start_with_slash { "" } else { "/" },
             &self.url,
-            if !has_extension && end_with_slash {
+            if has_extension {
+                ""
+            } else if end_with_slash {
                 "index.html"
             } else {
                 "/index.html"
