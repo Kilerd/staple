@@ -4,6 +4,7 @@ use crate::{
     error::StapleError,
     template::Template,
 };
+use walkdir::WalkDir;
 
 use std::path::Path;
 
@@ -39,53 +40,54 @@ impl App {
     pub fn load_all_data(&self) -> Result<Vec<PageInfo>, StapleError> {
         let path = Path::new("data");
         let mut articles = vec![];
-        let dir = path.read_dir()?;
+        let filter = WalkDir::new(path)
+            .into_iter()
+            .flat_map(|e| e.ok())
+            .filter(|de| de.path().is_file());
 
-        for path in dir {
-            if let Ok(p) = path {
-                let file_path = p.path();
-                if file_path.is_file() {
-                    let option = file_path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        for path in filter {
+            let file_path = path.path();
+            if file_path.is_file() {
+                let extension = file_path.extension().and_then(|e| e.to_str());
 
-                    let path = file_path.to_str().unwrap().to_string();
-                    match option {
-                        "md" => {
-                            let result2 = MarkdownFileData::load(file_path.to_str().unwrap())?;
-                            let info = PageInfo {
-                                file: path,
-                                url: result2.url,
-                                title: result2.title,
-                                template: result2.template,
-                                draw: result2.draw,
-                                datetime: result2.datetime,
-                                data: result2.data,
-                                description: result2.description,
-                            };
-                            articles.push(info);
-                        }
-                        "json" => {
-                            let result = std::fs::read_to_string(file_path)?;
-                            let data = JsonFileData::from_str(&result)?;
-
-                            let info = PageInfo {
-                                file: path,
-                                url: data.url,
-                                title: data.title,
-                                template: data.template,
-                                draw: data.draw,
-                                datetime: data.datetime,
-                                data: data.data,
-                                description: data.description,
-                            };
-
-                            articles.push(info);
-                        }
-                        _ => {}
+                let path = file_path.to_str().unwrap().to_string();
+                match extension {
+                    Some("md") => {
+                        let result2 = MarkdownFileData::load(file_path.to_str().unwrap())?;
+                        let info = PageInfo {
+                            file: path,
+                            url: result2.url,
+                            title: result2.title,
+                            template: result2.template,
+                            draw: result2.draw,
+                            datetime: result2.datetime,
+                            data: result2.data,
+                            description: result2.description,
+                        };
+                        articles.push(info);
                     }
+                    Some("json") => {
+                        let result = std::fs::read_to_string(file_path)?;
+                        let data = JsonFileData::from_str(&result)?;
+
+                        let info = PageInfo {
+                            file: path,
+                            url: data.url,
+                            title: data.title,
+                            template: data.template,
+                            draw: data.draw,
+                            datetime: data.datetime,
+                            data: data.data,
+                            description: data.description,
+                        };
+
+                        articles.push(info);
+                    }
+                    _ => {}
                 }
             }
         }
         articles.sort_by(|one, other| other.datetime.cmp(&one.datetime));
-        Ok(articles)
+        Ok(dbg!(articles))
     }
 }
