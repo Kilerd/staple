@@ -88,6 +88,6 @@ impl App {
             }
         }
         articles.sort_by(|one, other| other.datetime.cmp(&one.datetime));
-        Ok(dbg!(articles))
+        Ok(articles)
     }
 }
