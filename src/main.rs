@@ -1,3 +1,4 @@
+#![warn(clippy::unwrap_used, clippy::dbg_macro)]
 #[macro_use]
 extern crate pest_derive;
 
