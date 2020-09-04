@@ -19,7 +19,7 @@ impl App {
     pub fn load(develop: bool) -> Result<Self, StapleError> {
         let config = Config::load_from_file()?;
         debug!("init template");
-        let template = Template::new(config.get_theme()?);
+        let template = Template::new(config.get_theme()?)?;
         Ok(Self {
             config,
             template,

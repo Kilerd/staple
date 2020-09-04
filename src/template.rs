@@ -53,11 +53,11 @@ pub struct Template {
 }
 
 impl Template {
-    pub fn new(name: String) -> Self {
-        let mut tera = Tera::new(&format!("templates/{}/*", name)).unwrap();
+    pub fn new(name: String) -> Result<Self, StapleError> {
+        let mut tera = Tera::new(&format!("templates/{}/*", name))?;
         tera.register_filter("not_field", crate::util::filter::not_field);
         tera.register_function("page_detail", crate::util::filter::page_detail);
-        Template { name, tera }
+        Ok(Template { name, tera })
     }
 
     pub fn render(
