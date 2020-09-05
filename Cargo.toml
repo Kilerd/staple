@@ -1,7 +1,7 @@
 [package]
 name = "staple"
 description = "static blog generator"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Kilerd Chan <blove694@gmail.com>"]
 license = "MIT"
 edition = "2018"
