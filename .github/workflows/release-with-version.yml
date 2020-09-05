@@ -62,10 +62,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
+  publish-to-cargo:
+    name: Publish to Cargo
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+          uses: actions/checkout@v1
+      - name: publish to cargo
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_PUBLISH_TOKEN }}
+        run: cargo publish
 
   release-homepage:
     name: Release Homepage
     runs-on: ubuntu-latest
+    needs: publish-to-cargo
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
