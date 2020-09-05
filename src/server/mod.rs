@@ -37,7 +37,7 @@ impl Server {
                 .service(actix_files::Files::new("/", "./public").index_file("index.html"))
         })
         .bind(("0.0.0.0", 8000))
-        .unwrap()
+        .expect("")
         .system_exit()
         .start();
 

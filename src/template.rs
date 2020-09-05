@@ -95,7 +95,7 @@ impl Template {
         let full_article = article.to_full_article()?;
 
         let data = RenderData::new(full_article, articles, config, &debug_data);
-        let context = Context::from_serialize(&data).unwrap();
+        let context = Context::from_serialize(&data).expect("cannot serialize");
         let result = self.tera.render(data.page.template(), &context)?;
         let url = article.output_file_name();
         let url = &url[1..url.len()];

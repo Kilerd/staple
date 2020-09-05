@@ -50,10 +50,13 @@ impl App {
             if file_path.is_file() {
                 let extension = file_path.extension().and_then(|e| e.to_str());
 
-                let path = file_path.to_str().unwrap().to_string();
+                let path = file_path
+                    .to_str()
+                    .expect("invalid file path encoding")
+                    .to_string();
                 match extension {
                     Some("md") => {
-                        let result2 = MarkdownFileData::load(file_path.to_str().unwrap())?;
+                        let result2 = MarkdownFileData::load(&path)?;
                         let info = PageInfo {
                             file: path,
                             url: result2.url,

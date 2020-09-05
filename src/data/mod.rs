@@ -27,12 +27,21 @@ impl MarkdownContent {
             Event::Text(text) => {
                 let mut text_chars = text.as_bytes().iter();
                 let mut events = vec![];
-                let re = Regex::new(r#"\{(?P<title>[^}]+)}\((?P<ruby>[^)]+)\)"#).unwrap();
+                let re =
+                    Regex::new(r#"\{(?P<title>[^}]+)}\((?P<ruby>[^)]+)\)"#).expect("invalid regex");
                 let mut last_end_index = 0;
                 for captures in re.captures_iter(&text) {
                     let ruby_group = captures.get(0).unwrap();
-                    let ruby_name = captures.name("title").unwrap().as_str().to_string();
-                    let ruby_description = captures.name("ruby").unwrap().as_str().to_string();
+                    let ruby_name = captures
+                        .name("title")
+                        .expect("invalid title")
+                        .as_str()
+                        .to_string();
+                    let ruby_description = captures
+                        .name("ruby")
+                        .expect("invalid ruby")
+                        .as_str()
+                        .to_string();
                     let ruby_group_start = ruby_group.start();
 
                     if last_end_index != ruby_group_start {
@@ -41,7 +50,8 @@ impl MarkdownContent {
                             .take(ruby_group_start - last_end_index)
                             .copied()
                             .collect();
-                        let string = String::from_utf8(ruby_prefix_content).unwrap();
+                        let string =
+                            String::from_utf8(ruby_prefix_content).expect("invalid utf8 string");
                         events.push(Event::Text(string.into()));
                     }
                     last_end_index = ruby_group.end();
@@ -56,7 +66,7 @@ impl MarkdownContent {
                 }
                 if last_end_index < text.len() {
                     let rest: Vec<u8> = text_chars.copied().collect();
-                    let rest = String::from_utf8(rest).unwrap();
+                    let rest = String::from_utf8(rest).expect("invalid utf8 string");
                     events.push(Event::Text(rest.into()));
                 }
                 events
@@ -107,7 +117,8 @@ impl PageInfo {
         let path = Path::new(&self.file);
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         match extension {
-            "md" => MarkdownFileData::load(path.to_str().unwrap()).map(DataFile::MarkdownFile),
+            "md" => MarkdownFileData::load(path.to_str().expect("invalid file path encoding"))
+                .map(DataFile::MarkdownFile),
 
             "json" => {
                 let result = std::fs::read_to_string(path)?;

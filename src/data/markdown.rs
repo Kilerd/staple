@@ -46,14 +46,25 @@ impl MarkdownFileData {
         let mut content = String::new();
 
         let parse1 = ArticleParser::parse(Rule::article, &string);
-        let x = parse1.expect("").next().unwrap();
+        let x = parse1
+            .expect("unknown error on parsing markdown")
+            .next()
+            .expect("unknown error on parsing markdown");
         for pair in x.into_inner() {
             match pair.as_rule() {
                 Rule::meta => {
                     for meta in pair.into_inner() {
                         let mut x1 = meta.into_inner();
-                        let key: String = x1.next().unwrap().as_str().to_string();
-                        let value: String = x1.next().unwrap().as_str().to_string();
+                        let key: String = x1
+                            .next()
+                            .expect("unknown error on parsing markdown")
+                            .as_str()
+                            .to_string();
+                        let value: String = x1
+                            .next()
+                            .expect("unknown error on parsing markdown")
+                            .as_str()
+                            .to_string();
                         metas.insert(key.to_lowercase(), value);
                     }
                 }
