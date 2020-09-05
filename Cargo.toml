@@ -1,10 +1,12 @@
 [package]
 name = "staple"
-description = "static blog generator"
+description = "powerful static site generator"
 version = "0.2.2"
 authors = ["Kilerd Chan <blove694@gmail.com>"]
 license = "MIT"
 edition = "2018"
+readme= "readme.md"
+repository = "https://github.com/Kilerd/staple"
 
 
 [dependencies]
