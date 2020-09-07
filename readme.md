@@ -1,6 +1,7 @@
 <div align="center">
     <h1>Staple</h1>
     <p>powerful static site generator.</p>
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/kilerd/staple/Develop%20Build"> <img alt="Crates.io" src="https://img.shields.io/crates/v/staple"> <img alt="Codecov" src="https://img.shields.io/codecov/c/github/kilerd/staple"> <img alt="Crates.io (recent)" src="https://img.shields.io/crates/dr/staple"><img alt="Crates.io" src="https://img.shields.io/crates/l/staple">
 </div>
 
 ## Installation
