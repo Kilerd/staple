@@ -42,7 +42,7 @@ jobs:
       - name: Install Grcov
         run: |
           mkdir -p $GITHUB_WORKSPACE/bin
-          tar -xvf jxf -C $GITHUB_WORKSPACE/bin
+          tar -xvf grcov-linux-x86_64.tar.bz2 -C $GITHUB_WORKSPACE/bin
           chmod 777 $GITHUB_WORKSPACE/bin/grcov
       - name: Run Code Coverage
         run: |
