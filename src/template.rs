@@ -110,6 +110,7 @@ impl Template {
     }
 
     fn copy_statics_folder(&self, config: &Config) -> Result<(), StapleError> {
+        info!("copy template static folder");
         let statics_folder = format!("templates/{}/statics", config.site.theme);
         if Path::new(&statics_folder).exists() {
             debug!("statics folder exist, copy to render folder");
