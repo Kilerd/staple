@@ -23,3 +23,36 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
       - name: Run tests
         run: cargo test --verbose
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: "mozilla/grcov"
+          version: "latest"
+          file: "grcov-linux-x86_64.tar.bz2"
+      - name: Install Grcov
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/bin
+          tar -xvf jxf -C $GITHUB_WORKSPACE/bin
+          chmod 777 $GITHUB_WORKSPACE/bin/grcov
+      - name: Run Code Coverage
+        run: |
+          cargo build
+          cargo test
+          zip -0 ccov.zip `find . \( -name "staple*.gc*" \) -print`
+          $GITHUB_WORKSPACE/bin/grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info
+          bash <(curl -s https://codecov.io/bash) -f lcov.info
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+          RUSTDOCFLAGS: "-Cpanic=abort"
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
