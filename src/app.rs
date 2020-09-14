@@ -28,13 +28,46 @@ impl App {
     }
 
     pub fn render(self) -> Result<(), StapleError> {
+        for x in &self.config.hook.before_build {
+            info!("Before-Build Script: {}", x);
+
+            let mut result = std::process::Command::new("sh")
+                .arg("-c")
+                .arg(x.to_cmd())
+                .current_dir(x.to_dir())
+                .spawn()
+                .expect("cannot spawn process");
+
+            let status = result.wait()?;
+            if !status.success() {
+                return Err(StapleError::HookError(x.to_cmd(), status.code()));
+            }
+        }
         let vec = self
             .load_all_data()?
             .into_iter()
             .filter(|article| !article.draw)
             .collect();
         self.template
-            .render(vec, &self.config, self.is_develop_mode)
+            .render(vec, &self.config, self.is_develop_mode)?;
+
+        for x in &self.config.hook.after_build {
+            info!("Before-Build Script: {}", x);
+
+            let mut result = std::process::Command::new("sh")
+                .arg("-c")
+                .arg(x.to_cmd())
+                .current_dir(x.to_dir())
+                .spawn()
+                .expect("cannot spawn process");
+
+            let status = result.wait()?;
+            if !status.success() {
+                return Err(StapleError::HookError(x.to_cmd(), status.code()));
+            }
+        }
+
+        Ok(())
     }
 
     pub fn load_all_data(&self) -> Result<Vec<PageInfo>, StapleError> {

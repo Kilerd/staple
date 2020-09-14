@@ -4,35 +4,70 @@ use serde_derive::{Deserialize, Serialize};
 use toml::Value;
 
 use crate::error::StapleError;
+use serde::export::Formatter;
+use std::fmt::Display;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub site: Site,
+    #[serde(default)]
     pub statics: Vec<Statics>,
     pub extra: HashMap<String, Value>,
+    #[serde(default)]
+    pub hook: Hook,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ConfigFile {
-    pub site: Site,
-    pub statics: Option<Vec<Statics>>,
-    pub extra: HashMap<String, Value>,
+pub struct Hook {
+    #[serde(default)]
+    pub before_build: Vec<HookLine>,
+    #[serde(default)]
+    pub after_build: Vec<HookLine>,
+}
+
+impl Default for Hook {
+    fn default() -> Self {
+        Hook {
+            before_build: vec![],
+            after_build: vec![],
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+pub enum HookLine {
+    Command(String),
+    TargetDir { dir: String, command: String },
+}
+
+impl HookLine {
+    pub fn to_dir(&self) -> String {
+        match self {
+            HookLine::Command(_) => String::from("./"),
+            HookLine::TargetDir { dir, command: _ } => dir.to_string(),
+        }
+    }
+    pub fn to_cmd(&self) -> String {
+        match self {
+            HookLine::Command(cmd) => cmd.to_string(),
+            HookLine::TargetDir { dir: _, command } => command.to_string(),
+        }
+    }
+}
+
+impl Display for HookLine {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}] {}", self.to_dir(), self.to_cmd())
+    }
 }
 
 impl Config {
     pub fn load_from_file() -> Result<Self, StapleError> {
         debug!("load config file");
         let config_content = std::fs::read_to_string("Staple.toml")?;
-        let result: ConfigFile = toml::from_str(&config_content)?;
-        Config::new_from_file(result)
-    }
-
-    pub fn new_from_file(config_file: ConfigFile) -> Result<Self, StapleError> {
-        Ok(Self {
-            site: config_file.site,
-            statics: config_file.statics.unwrap_or_default(),
-            extra: config_file.extra,
-        })
+        let result: Config = toml::from_str(&config_content)?;
+        Ok(dbg!(result))
     }
 
     pub fn get_theme(&self) -> Result<String, StapleError> {
@@ -46,18 +81,21 @@ impl Config {
             Ok(self.site.theme.clone())
         }
     }
-
-    pub fn get_default_file() -> ConfigFile {
-        ConfigFile::default()
+    pub fn get_default_file() -> Config {
+        Config::default()
     }
 }
 
-impl Default for ConfigFile {
+impl Default for Config {
     fn default() -> Self {
-        ConfigFile {
+        Config {
             site: Default::default(),
+            statics: vec![],
             extra: Default::default(),
-            statics: None,
+            hook: Hook {
+                before_build: vec![],
+                after_build: vec![],
+            },
         }
     }
 }
@@ -114,4 +152,22 @@ impl Default for Url {
 pub struct Statics {
     pub from: String,
     pub to: String,
+}
+
+#[cfg(test)]
+mod test {
+    use crate::config::HookLine;
+
+    #[test]
+    fn test_hook_display() {
+        assert_eq!("[./] ls", HookLine::Command("ls".to_string()).to_string());
+        assert_eq!(
+            "[data] ls",
+            HookLine::TargetDir {
+                dir: "data".to_string(),
+                command: "ls".to_string()
+            }
+            .to_string()
+        );
+    }
 }

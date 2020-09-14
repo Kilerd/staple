@@ -25,4 +25,7 @@ pub enum StapleError {
 
     #[error("cannot serde json file: {0}")]
     JsonFileParseError(#[from] serde_json::Error),
+
+    #[error("execute hook `{}` get non-zero exit code: {}", .0, .1.unwrap_or(-1))]
+    HookError(String, Option<i32>),
 }
