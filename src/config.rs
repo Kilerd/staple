@@ -7,7 +7,7 @@ use crate::error::StapleError;
 use serde::export::Formatter;
 use std::fmt::Display;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Config {
     pub site: Site,
     #[serde(default)]
@@ -17,7 +17,7 @@ pub struct Config {
     pub hook: Hook,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Hook {
     #[serde(default)]
     pub before_build: Vec<HookLine>,
@@ -34,7 +34,7 @@ impl Default for Hook {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum HookLine {
     Command(String),
@@ -100,7 +100,7 @@ impl Default for Config {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Site {
     pub title: String,
     pub subtitle: String,
@@ -118,14 +118,14 @@ pub struct Site {
 impl Default for Site {
     fn default() -> Self {
         Self {
-            title: "".to_string(),
+            title: "Staple Site".to_string(),
             subtitle: "".to_string(),
             description: "".to_string(),
             keywords: vec![],
             author: "".to_string(),
             email: "".to_string(),
             utc_offset: 800,
-            theme: "rubble".to_string(),
+            theme: "staple".to_string(),
             domain: "".to_string(),
             domain_root: "".to_string(),
             default_template: "article.html".to_string(),
@@ -133,22 +133,7 @@ impl Default for Site {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Url {
-    pub url: String,
-    pub root: String,
-}
-
-impl Default for Url {
-    fn default() -> Self {
-        Self {
-            url: "http://localhost:8000".to_string(),
-            root: "/".to_string(),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Statics {
     pub from: String,
     pub to: String,
@@ -156,7 +141,7 @@ pub struct Statics {
 
 #[cfg(test)]
 mod test {
-    use crate::config::HookLine;
+    use crate::config::{HookLine, Config};
 
     #[test]
     fn test_hook_display() {
@@ -169,5 +154,42 @@ mod test {
             }
             .to_string()
         );
+    }
+
+    #[test]
+    fn test_config_file_site_default() {
+        let config = Config::default();
+        let site = config.site;
+        assert_eq!("Staple Site", site.title);
+        assert_eq!("", site.author);
+        assert_eq!("staple", site.theme);
+        assert_eq!("", site.domain_root);
+        assert_eq!("article.html", site.default_template);
+        assert_eq!(800, site.utc_offset);
+    }
+
+    #[test]
+    fn test_config_file_hook_default() {
+        let config = Config::default();
+        assert!(config.hook.before_build.is_empty());
+        assert!(config.hook.after_build.is_empty());
+    }
+
+    #[test]
+    fn test_config_file_statics_default() {
+        let config = Config::default();
+        assert!(config.statics.is_empty());
+    }
+
+    #[test]
+    fn test_config_file_extra_default() {
+        let config = Config::default();
+        assert!(config.extra.is_empty());
+    }
+
+    #[test]
+    fn test_config_default_generator() {
+        let config = Config::get_default_file();
+        assert_eq!(Config::default(), config);
     }
 }
