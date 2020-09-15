@@ -51,7 +51,7 @@ jobs:
           chmod 777 $GITHUB_WORKSPACE/bin/grcov
       - name: Run Code Coverage
         run: |
-          rm -rf target/debug/deps/staple*
+          cargo clean
           cargo build
           cargo test
           zip -0 ccov.zip `find . \( -name "staple*.gc*" \) -print`
