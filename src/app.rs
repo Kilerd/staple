@@ -6,24 +6,26 @@ use crate::{
 };
 use walkdir::WalkDir;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct App {
     pub(crate) config: Config,
     pub(crate) template: Template,
     is_develop_mode: bool,
+    path: PathBuf,
 }
 
 impl App {
-    pub fn load(develop: bool) -> Result<Self, StapleError> {
-        let config = Config::load_from_file()?;
+    pub fn load(path: impl AsRef<Path>,  develop: bool) -> Result<Self, StapleError> {
+        let config = Config::load_from_file(&path)?;
         debug!("init template");
         let template = Template::new(config.get_theme()?)?;
         Ok(Self {
             config,
             template,
             is_develop_mode: develop,
+            path: path.as_ref().to_path_buf()
         })
     }
 

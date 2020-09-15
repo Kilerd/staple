@@ -6,15 +6,17 @@ use toml::Value;
 use crate::error::StapleError;
 use serde::export::Formatter;
 use std::fmt::Display;
+use crate::constants::STAPLE_CONFIG_FILE;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Config {
     pub site: Site,
     #[serde(default)]
     pub statics: Vec<Statics>,
-    pub extra: HashMap<String, Value>,
     #[serde(default)]
     pub hook: Hook,
+    pub extra: HashMap<String, Value>,
+
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -62,12 +64,33 @@ impl Display for HookLine {
     }
 }
 
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct ConfigFile {
+    pub site: Site,
+    pub statics: Option<Vec<Statics>>,
+    pub extra: HashMap<String, Value>,
+    pub hook: Hook,
+}
+
+impl Default for ConfigFile {
+    fn default() -> Self {
+        ConfigFile {
+            site: Default::default(),
+            statics: None,
+            extra: Default::default(),
+            hook: Default::default()
+        }
+    }
+}
+
 impl Config {
-    pub fn load_from_file() -> Result<Self, StapleError> {
+    pub fn load_from_file(path: impl AsRef<Path>) -> Result<Self, StapleError> {
         debug!("load config file");
-        let config_content = std::fs::read_to_string("Staple.toml")?;
+        let config_file_path = path.as_ref().join(STAPLE_CONFIG_FILE);
+        let config_content = std::fs::read_to_string(config_file_path)?;
         let result: Config = toml::from_str(&config_content)?;
-        Ok(dbg!(result))
+        Ok(result)
     }
 
     pub fn get_theme(&self) -> Result<String, StapleError> {
@@ -81,8 +104,8 @@ impl Config {
             Ok(self.site.theme.clone())
         }
     }
-    pub fn get_default_file() -> Config {
-        Config::default()
+    pub fn get_default_file() -> ConfigFile {
+        ConfigFile::default()
     }
 }
 
@@ -91,11 +114,11 @@ impl Default for Config {
         Config {
             site: Default::default(),
             statics: vec![],
-            extra: Default::default(),
             hook: Hook {
                 before_build: vec![],
                 after_build: vec![],
             },
+            extra: Default::default(),
         }
     }
 }
@@ -141,7 +164,7 @@ pub struct Statics {
 
 #[cfg(test)]
 mod test {
-    use crate::config::{HookLine, Config};
+    use crate::config::{HookLine, Config, ConfigFile};
 
     #[test]
     fn test_hook_display() {
@@ -190,6 +213,6 @@ mod test {
     #[test]
     fn test_config_default_generator() {
         let config = Config::get_default_file();
-        assert_eq!(Config::default(), config);
+        assert_eq!(ConfigFile::default(), config);
     }
 }

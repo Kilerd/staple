@@ -15,13 +15,12 @@ default_template = "article.html"
 from = "CNAME"
 to = "CNAME"
 
-[extra]
-version = "0.2.0"
-
-
 [hook]
 before_build = [
     "ls",
-#    { dir = "./data", command = "ls" },
+    #    { dir = "./data", command = "ls" },
     "ping www.baidu.com -c 10"
 ]
+
+[extra]
+version = "0.2.0"

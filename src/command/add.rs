@@ -3,6 +3,7 @@ use crate::{
     data::{JsonFileData, MarkdownFileData},
     error::StapleError,
 };
+use std::path::Path;
 
 pub fn add(
     title: String,
@@ -11,7 +12,8 @@ pub fn add(
     draw: bool,
     data: bool,
 ) -> Result<(), StapleError> {
-    let app = App::load(false)?;
+    let path = Path::new("./");
+    let app = App::load(&path, false)?;
     let url = url.unwrap_or_else(|| title.trim().replace(" ", "-").replace("_", "-"));
     let template = template.unwrap_or(app.config.site.default_template);
 
