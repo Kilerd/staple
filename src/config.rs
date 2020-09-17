@@ -3,10 +3,9 @@ use std::{collections::HashMap, path::Path};
 use serde_derive::{Deserialize, Serialize};
 use toml::Value;
 
-use crate::error::StapleError;
+use crate::{constants::STAPLE_CONFIG_FILE, error::StapleError};
 use serde::export::Formatter;
 use std::fmt::Display;
-use crate::constants::STAPLE_CONFIG_FILE;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Config {
@@ -16,7 +15,6 @@ pub struct Config {
     #[serde(default)]
     pub hook: Hook,
     pub extra: HashMap<String, Value>,
-
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -64,7 +62,6 @@ impl Display for HookLine {
     }
 }
 
-
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ConfigFile {
     pub site: Site,
@@ -79,7 +76,7 @@ impl Default for ConfigFile {
             site: Default::default(),
             statics: None,
             extra: Default::default(),
-            hook: Default::default()
+            hook: Default::default(),
         }
     }
 }
@@ -164,7 +161,7 @@ pub struct Statics {
 
 #[cfg(test)]
 mod test {
-    use crate::config::{HookLine, Config, ConfigFile};
+    use crate::config::{Config, ConfigFile, HookLine};
 
     #[test]
     fn test_hook_display() {

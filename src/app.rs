@@ -17,7 +17,7 @@ pub struct App {
 }
 
 impl App {
-    pub fn load(path: impl AsRef<Path>,  develop: bool) -> Result<Self, StapleError> {
+    pub fn load(path: impl AsRef<Path>, develop: bool) -> Result<Self, StapleError> {
         let config = Config::load_from_file(&path)?;
         debug!("init template");
         let template = Template::new(config.get_theme()?)?;
@@ -25,7 +25,7 @@ impl App {
             config,
             template,
             is_develop_mode: develop,
-            path: path.as_ref().to_path_buf()
+            path: path.as_ref().to_path_buf(),
         })
     }
 

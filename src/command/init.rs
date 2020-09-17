@@ -30,22 +30,25 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
     Ok(())
 }
 
-
-
 #[cfg(test)]
 mod test {
-    use crate::command::init::init;
-    use crate::constants::STAPLE_CONFIG_FILE;
+    use crate::{command::init::init, constants::STAPLE_CONFIG_FILE};
 
     #[test]
-    fn test_init() -> Result<(), Box< dyn std::error::Error>> {
+    fn test_init() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempfile::tempdir()?.into_path();
         std::env::set_current_dir(&dir)?;
         init("./")?;
 
-        assert!(dir.join(STAPLE_CONFIG_FILE).exists(), "cannot generate file Staple.toml");
+        assert!(
+            dir.join(STAPLE_CONFIG_FILE).exists(),
+            "cannot generate file Staple.toml"
+        );
         assert!(dir.join("data").is_dir(), "cannot find data folder");
-        assert!(dir.join("templates").is_dir(), "cannot find templates folder");
+        assert!(
+            dir.join("templates").is_dir(),
+            "cannot find templates folder"
+        );
 
         Ok(())
     }
