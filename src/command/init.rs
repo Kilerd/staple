@@ -20,7 +20,6 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
         }
     }
     let config = Config::get_default_file();
-    dbg!(&config);
     let string = toml::to_string(&config).expect("cannot serialize default config struct");
     std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
     std::fs::create_dir(buf.join("data"))?;

@@ -1,4 +1,4 @@
-use crate::data::PageInfo;
+use crate::data::{MarkdownContent, PageInfo};
 use chrono::{FixedOffset, Utc};
 use std::collections::HashMap;
 use tera::{Error, Value};
@@ -16,7 +16,7 @@ pub fn not_field(value: &Value, attributes: &HashMap<String, Value>) -> Result<V
         None => {
             return Err(Error::msg(
                 "The `not_field` filter has to have an `attribute` argument",
-            ))
+            ));
         }
     };
     let result = arr
@@ -46,13 +46,13 @@ pub fn page_detail(args: &HashMap<String, Value>) -> Result<Value, tera::Error> 
                 return Err(Error::msg(format!(
                     "Function `page_detail` receive file={} but `file` can only be a string",
                     val
-                )))
+                )));
             }
         },
         None => {
             return Err(Error::msg(
                 "Function `page_detail` was called without argument `file`",
-            ))
+            ));
         }
     };
 
@@ -73,4 +73,35 @@ pub fn page_detail(args: &HashMap<String, Value>) -> Result<Value, tera::Error> 
         Err(e) => return Err(Error::msg(format!("Error on loading page detail: {}", e))),
     };
     serde_json::to_value(data).map_err(|_| Error::msg("Error on serializing page data into json"))
+}
+
+/// render text as markdown
+pub fn markdown(value: &Value, _attributes: &HashMap<String, Value>) -> Result<Value, tera::Error> {
+    if let Value::String(content) = value {
+        let html_content = MarkdownContent::new(content.to_owned()).html;
+        Ok(Value::String(html_content))
+    } else {
+        Ok(value.to_owned())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::util::filter::markdown;
+    use serde_json::Value;
+    use std::collections::HashMap;
+
+    #[test]
+    fn should_render_text_into_markdown() {
+        let value = Value::String("hello".to_owned());
+        let result = markdown(&value, &HashMap::new()).expect("is not a ok");
+        assert_eq!(Value::String("<p>hello</p>\n".to_owned()), result);
+    }
+
+    #[test]
+    fn should_return_the_same_if_value_is_not_text() {
+        let value = Value::Bool(true);
+        let result = markdown(&value, &HashMap::new()).expect("is not a ok");
+        assert_eq!(Value::Bool(true), result);
+    }
 }

@@ -56,6 +56,7 @@ impl Template {
     pub fn new(name: String) -> Result<Self, StapleError> {
         let mut tera = Tera::new(&format!("templates/{}/*", name))?;
         tera.register_filter("not_field", crate::util::filter::not_field);
+        tera.register_filter("markdown", crate::util::filter::markdown);
         tera.register_function("page_detail", crate::util::filter::page_detail);
         Ok(Template { name, tera })
     }
