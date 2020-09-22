@@ -7,11 +7,12 @@ use serde_json::Value;
 
 use std::{collections::HashMap, path::Path};
 
-pub use crate::data::{json::JsonFileData, markdown::MarkdownFileData};
-use crate::error::StapleError;
+use crate::{
+    data::types::{json::JsonFileData, markdown::MarkdownFileData, FileType},
+    error::StapleError,
+};
 
-mod json;
-mod markdown;
+pub(crate) mod types;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MarkdownContent {
@@ -84,7 +85,7 @@ impl MarkdownContent {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "types")]
 pub enum DataFile {
     JsonFile(JsonFileData),
     MarkdownFile(MarkdownFileData),
@@ -95,6 +96,19 @@ impl DataFile {
         match &self {
             DataFile::JsonFile(data) => &data.template,
             DataFile::MarkdownFile(data) => &data.template,
+        }
+    }
+
+    pub fn load(path: impl AsRef<Path>) -> Result<Option<PageInfo>, StapleError> {
+        let extension = path.as_ref().extension().and_then(|e| e.to_str());
+        match extension {
+            Some("md") => {
+                MarkdownFileData::load(path.as_ref()).map(|full| Some(full.into_page_info()))
+            }
+            Some("json") => {
+                JsonFileData::load(path.as_ref()).map(|full| Some(full.into_page_info()))
+            }
+            _ => Ok(None),
         }
     }
 }
@@ -122,7 +136,7 @@ impl PageInfo {
 
             "json" => {
                 let result = std::fs::read_to_string(path)?;
-                JsonFileData::from_str(&result).map(DataFile::JsonFile)
+                JsonFileData::load(&result).map(DataFile::JsonFile)
             }
             _ => unreachable!(),
         }
@@ -148,7 +162,6 @@ impl PageInfo {
         )
     }
 }
-
 #[cfg(test)]
 mod test {
     use crate::data::MarkdownContent;

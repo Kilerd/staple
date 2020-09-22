@@ -6,12 +6,16 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::{
     constants::{DESCRIPTION_SEPARATOR, LINE_ENDING},
-    data::MarkdownContent,
+    data::{
+        types::{CreationOptions, FileType},
+        MarkdownContent, PageInfo,
+    },
     error::StapleError,
 };
+use std::path::Path;
 
 #[derive(Parser)]
-#[grammar = "data/article.pest"] // relative to src
+#[grammar = "data/types/article.pest"] // relative to src
 struct ArticleParser;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -26,20 +30,23 @@ pub struct ArticleMeta {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MarkdownFileData {
+    pub path: String,
     pub url: String,
     pub title: String,
     pub template: String,
     pub datetime: DateTime<FixedOffset>,
     #[serde(default)]
     pub draw: bool,
-    // todo support multiple layers of data
     pub data: HashMap<String, serde_json::Value>,
     pub content: MarkdownContent,
     pub description: Option<MarkdownContent>,
 }
 
-impl MarkdownFileData {
-    pub fn load(file: &str) -> Result<MarkdownFileData, StapleError> {
+impl FileType for MarkdownFileData {
+    type Output = MarkdownFileData;
+
+    fn load(file: impl AsRef<Path>) -> Result<Self::Output, StapleError> {
+        let file = file.as_ref().to_str().unwrap();
         debug!("load article {}", &file);
         let string = std::fs::read_to_string(file)?;
         let mut metas: HashMap<String, String> = HashMap::new();
@@ -124,6 +131,7 @@ impl MarkdownFileData {
             .collect();
 
         Ok(MarkdownFileData {
+            path: file.to_owned(),
             url,
             title,
             template,
@@ -135,27 +143,38 @@ impl MarkdownFileData {
         })
     }
 
-    pub fn create(
-        title: String,
-        url: String,
-        template: String,
-        draw: bool,
-    ) -> Result<(), StapleError> {
+    fn create(_file: impl AsRef<Path>, options: &CreationOptions) -> Result<(), StapleError> {
         let offset = FixedOffset::east(60 * 60 * 8);
         let datetime = Utc::now().with_timezone(&offset).to_rfc3339();
 
         let mut content = String::new();
 
-        content.push_str(&format!(" - title = {}{}", &title, LINE_ENDING));
-        content.push_str(&format!(" - url = {}{}", &url, LINE_ENDING));
+        content.push_str(&format!(" - title = {}{}", &options.title, LINE_ENDING));
+        content.push_str(&format!(" - url = {}{}", &options.url, LINE_ENDING));
         content.push_str(&format!(" - datetime = {}{}", datetime, LINE_ENDING));
-        content.push_str(&format!(" - template = {}{}", template, LINE_ENDING));
-        content.push_str(&format!(" - draw = {}{}", draw, LINE_ENDING));
+        content.push_str(&format!(
+            " - template = {}{}",
+            options.template, LINE_ENDING
+        ));
+        content.push_str(&format!(" - draw = {}{}", options.draw, LINE_ENDING));
         content.push_str(LINE_ENDING);
 
-        let file_name = title.trim().replace(" ", "-").replace("_", "-");
+        let file_name = options.title.trim().replace(" ", "-").replace("_", "-");
         let file_path = format!("data/{}.md", &file_name);
         std::fs::write(file_path, content)?;
         Ok(())
+    }
+
+    fn into_page_info(self) -> PageInfo {
+        PageInfo {
+            file: self.path,
+            url: self.url,
+            title: self.title,
+            template: self.template,
+            draw: self.draw,
+            datetime: self.datetime,
+            data: self.data,
+            description: self.description,
+        }
     }
 }
