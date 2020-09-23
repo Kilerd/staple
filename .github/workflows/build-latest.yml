@@ -29,7 +29,7 @@ jobs:
         run: cargo test --verbose -- --test-threads 1
       - name: Run Code Coverage
         run: |
-          cargo +nightly tarpaulin --out Xml -- --test-threads 1
+          cargo tarpaulin --out Xml -- --test-threads 1
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v1
         with:
