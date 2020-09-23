@@ -90,7 +90,6 @@ mod test {
     use crate::util::filter::{get_json_pointer, markdown, not_field};
     use serde_json::{Map, Value};
     use std::collections::HashMap;
-    use tera::ErrorKind;
 
     #[test]
     fn test_get_json_pointer() {
