@@ -29,9 +29,4 @@ jobs:
         run: cargo test --verbose -- --test-threads 1
       - name: Run Code Coverage
         run: |
-          cargo tarpaulin --out Xml -- --test-threads 1
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{secrets.CODECOV_TOKEN}} # not required for public repos
-          fail_ci_if_error: true
+          cargo tarpaulin --coveralls {{$.secrets.COVERALLS_TOKEN}} -- --test-threads 1
