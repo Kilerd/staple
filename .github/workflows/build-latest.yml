@@ -17,48 +17,22 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
       - name: Format
         run: cargo fmt --all -- --check
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
+      - name: Run cargo clean
+        run: cargo clean
       - name: Run tests
         run: cargo test --verbose -- --test-threads 1
-
-  code-coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Cache cargo build
-        uses: actions/cache@v1
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
-      - uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          repo: "mozilla/grcov"
-          version: "latest"
-          file: "grcov-linux-x86_64.tar.bz2"
-      - name: Install Grcov
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/bin
-          tar -xvf grcov-linux-x86_64.tar.bz2 -C $GITHUB_WORKSPACE/bin
-          chmod 777 $GITHUB_WORKSPACE/bin/grcov
       - name: Run Code Coverage
         run: |
-          cargo clean
-          cargo build
-          cargo test -- --test-threads 1
-          zip -0 ccov.zip `find . \( -name "staple*.gc*" \) -print`
-          $GITHUB_WORKSPACE/bin/grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o lcov.info
-          bash <(curl -s https://codecov.io/bash) -f lcov.info
+          cargo tarpaulin --out Xml
+          bash <(curl -s https://codecov.io/bash)
         env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
-          RUSTDOCFLAGS: "-Cpanic=abort"
+          #          CARGO_INCREMENTAL: 0
+          #          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zpanic_abort_tests -Cpanic=abort"
+          #          RUSTDOCFLAGS: "-Cpanic=abort"
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
