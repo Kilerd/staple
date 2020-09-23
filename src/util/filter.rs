@@ -25,11 +25,11 @@ pub fn not_field(value: &Value, attributes: &HashMap<String, Value>) -> Result<V
             let field = item
                 .pointer(&get_json_pointer(&key))
                 .unwrap_or(&Value::Null);
-            field.is_null()
-                || field.eq(&Value::Bool(false))
-                || field.eq(&Value::String(String::from("false")))
-                || field.eq(&Value::String(String::from("False")))
-                || field.eq(&Value::String(String::from("FALSE")))
+            if let Value::String(content) = field {
+                content.to_uppercase().eq("FALSE")
+            } else {
+                field.is_null() || field.eq(&Value::Bool(false))
+            }
         })
         .collect();
 
@@ -87,9 +87,66 @@ pub fn markdown(value: &Value, _attributes: &HashMap<String, Value>) -> Result<V
 
 #[cfg(test)]
 mod test {
-    use crate::util::filter::markdown;
-    use serde_json::Value;
+    use crate::util::filter::{get_json_pointer, markdown, not_field};
+    use serde_json::{Map, Value};
     use std::collections::HashMap;
+    use tera::ErrorKind;
+
+    #[test]
+    fn test_get_json_pointer() {
+        assert_eq!("/a", get_json_pointer("a"));
+        assert_eq!("/a/b", get_json_pointer("a.b"));
+    }
+
+    #[test]
+    fn should_raise_error_when_attribute_is_empty_in_not_field() {
+        let mut map = Map::new();
+        map.insert("ok".to_owned(), Value::Bool(true));
+        let value = Value::Array(vec![Value::Object(map)]);
+        let result = not_field(&value, &HashMap::new());
+        assert!(result.is_err());
+    }
+    #[test]
+    fn test_not_field1() {
+        let mut map = Map::new();
+        map.insert("ok".to_owned(), Value::Bool(true));
+        let value = Value::Array(vec![Value::Object(map)]);
+
+        let mut attribute = HashMap::new();
+        attribute.insert("attribute".to_owned(), Value::String("ok".to_owned()));
+        let result = not_field(&value, &attribute).unwrap();
+        assert_eq!(Value::Array(vec![]), result);
+    }
+    #[test]
+    fn test_not_field2() {
+        let mut map1 = Map::new();
+        map1.insert("ok".to_owned(), Value::Bool(false));
+
+        let mut map2 = Map::new();
+        map2.insert("ok".to_owned(), Value::Null);
+
+        let mut map3 = Map::new();
+        map3.insert("ok".to_owned(), Value::String("false".to_owned()));
+
+        let mut map4 = Map::new();
+        map4.insert("ok".to_owned(), Value::String("False".to_owned()));
+
+        let mut map5 = Map::new();
+        map5.insert("ok".to_owned(), Value::String("FALSE".to_owned()));
+
+        let value = Value::Array(vec![
+            Value::Object(map1),
+            Value::Object(map2),
+            Value::Object(map3),
+            Value::Object(map4),
+            Value::Object(map5),
+        ]);
+
+        let mut attribute = HashMap::new();
+        attribute.insert("attribute".to_owned(), Value::String("ok".to_owned()));
+        let result = not_field(&value, &attribute).unwrap();
+        assert_eq!(5, result.as_array().unwrap().len());
+    }
 
     #[test]
     fn should_render_text_into_markdown() {

@@ -175,4 +175,12 @@ mod test {
             content.html
         );
     }
+    #[test]
+    fn should_render_ruby_tag_with_utf8() {
+        let content = MarkdownContent::new("这是一个{RUBY带中文}(中文下标)标签".to_string());
+        assert_eq!(
+            "<p>这是一个<ruby>RUBY带中文<rp>(</rp><rt>中文下标</rt><rp>)</rp></ruby>标签</p>\n",
+            content.html
+        );
+    }
 }
