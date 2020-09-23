@@ -30,3 +30,46 @@ pub fn add(
         MarkdownFileData::create(path, &options)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::command::add::add;
+    use serde_json::Value;
+    #[test]
+    fn should_add_markdown_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?.into_path();
+        std::env::set_current_dir(&dir)?;
+        crate::command::init::init("./")?;
+
+        add("test-one".to_owned(), None, None, false, false)?;
+        assert!(dir.join("data").join("test-one.md").exists());
+
+        Ok(())
+    }
+    #[test]
+    fn should_add_json_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?.into_path();
+        std::env::set_current_dir(&dir)?;
+        crate::command::init::init("./")?;
+
+        add("test-one".to_owned(), None, None, false, true)?;
+        assert!(dir.join("data").join("test-one.json").exists());
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_add_json_draw_file() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?.into_path();
+        std::env::set_current_dir(&dir)?;
+        crate::command::init::init("./")?;
+
+        add("test-one".to_owned(), None, None, true, true)?;
+        let buf = dir.join("data").join("test-one.json");
+        let string = std::fs::read_to_string(buf)?;
+        let result: serde_json::Value = serde_json::from_str(&string)?;
+
+        assert_eq!(Some(&Value::Bool(true)), result.get("draw"));
+        Ok(())
+    }
+}
