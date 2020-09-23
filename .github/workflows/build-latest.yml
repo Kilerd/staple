@@ -29,4 +29,6 @@ jobs:
         run: cargo test --verbose -- --test-threads 1
       - name: Run Code Coverage
         run: |
-          cargo tarpaulin --coveralls {{$.secrets.COVERALLS_TOKEN}} -- --test-threads 1
+          cargo tarpaulin --ciserver github-ci --coveralls $COVERALLS_REPO_TOKEN -- --test-threads 1
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
