@@ -24,6 +24,7 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
     std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
     std::fs::create_dir(buf.join("data"))?;
     std::fs::create_dir(buf.join("templates"))?;
+    std::fs::create_dir(buf.join("templates").join("staple"))?;
 
     info!("init");
     Ok(())
@@ -39,16 +40,12 @@ mod test {
         std::env::set_current_dir(&dir)?;
         init("./")?;
 
-        assert!(
-            dir.join(STAPLE_CONFIG_FILE).exists(),
-            "cannot generate file Staple.toml"
-        );
-        assert!(dir.join("data").is_dir(), "cannot find data folder");
-        assert!(
-            dir.join("templates").is_dir(),
-            "cannot find templates folder"
-        );
+        let check_point = vec![STAPLE_CONFIG_FILE, "data", "templates", "templates/staple"];
 
+        for point in check_point {
+            let buf = dir.join(point);
+            assert!(buf.exists());
+        }
         Ok(())
     }
 }

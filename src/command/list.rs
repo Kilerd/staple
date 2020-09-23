@@ -21,3 +21,19 @@ pub(crate) fn command() -> Result<(), StapleError> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use crate::command::list::command;
+
+    #[test]
+    fn test_list() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?.into_path();
+        std::env::set_current_dir(&dir)?;
+        crate::command::init::init("./")?;
+
+        command()?;
+
+        Ok(())
+    }
+}
