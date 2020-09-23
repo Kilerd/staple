@@ -17,18 +17,17 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin
       - name: Format
         run: cargo fmt --all -- --check
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
-      - name: Run cargo clean
-        run: cargo clean
-      - name: Run tests
-        run: cargo test --verbose -- --test-threads 1
-      - name: Run Code Coverage
-        run: |
-          cargo tarpaulin --ciserver github-ci --coveralls $COVERALLS_REPO_TOKEN -- --test-threads 1
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '--ignore-tests --ciserver github-ci --out Lcov -- --test-threads 1'
+
+      - name: upload to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          path-to-lcov: './lcov.info'
