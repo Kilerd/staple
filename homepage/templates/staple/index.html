@@ -1,47 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/statics/style.css">
-    <title>Staple</title>
-</head>
-<body>
-<div>
-    <h1 class="title">Staple</h1>
-    <p class="description">简化你的博客之旅。</p>
-    <br>
-    <div>hehehefsdfsfdsfs</div>
-    <nav>
-        <a href="archive.html">Archives</a>
-        <a href="Changelog.html">Changelog</a>
-        <a href="https://github.com/Kilerd/staple" target="_blank">Github</a>
-    </nav>
+{% extends "base.html" %}
+{% block body %}
+<div class="container">
+    <div class="page-size brand">
+        <div class="content">
+            <h1>STAPLE<sup>{{config.extra.version}}</sup></h1>
+            <p>powerful static site generator</p>
 
-    <section class="container">
-
-        {% for one_page in pages | not_field(attribute="data.page") %}
-        <section class="article">
-            <p class="mate">{{ one_page.datetime | date(format="%B %d, %Y") }}</p>
-            <a class="title"
-               href="/{{ one_page.url }}">{{ one_page.title }}</a>
-            {% if one_page.description %}
-            <section class="yue desc">
-                {{ one_page.description.html | safe }}
-            </section>
-            {% endif %}
-        </section>
-        {% endfor %}
-    </section>
-    <div>
-        {{ page.content.html | safe }}
+        </div>
     </div>
-    <pre><code>{{ __tera_context | escape  | safe }}</code></pre>
+    <div class="page-size articles">
+        <div class="inner">
+            {% for one_page in pages | not_field(attribute="data.page") | reverse %}
+            <section class="article">
+                <a class="title"
+                   href="/{{ one_page.url }}">{{ one_page.title }}</a>
+            </section>
+            {% endfor %}
+        </div>
 
-
+    </div>
 
 </div>
-</body>
-{{ develop.live_reload | safe }}
-</html>
+{% endblock body %}

@@ -11,15 +11,9 @@ domain = "https://kilerd.github.io"
 domain_root = "staple"
 default_template = "article.html"
 
-[[statics]]
-from = "CNAME"
-to = "CNAME"
-
 [hook]
 before_build = [
-    "ls",
-    #    { dir = "./data", command = "ls" },
-    "ping www.baidu.com -c 10"
+    { dir="templates/staple/statics", command="lessc style.less style.css" }
 ]
 
 [extra]

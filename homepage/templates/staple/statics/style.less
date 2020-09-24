@@ -1,0 +1,65 @@
+* {
+  margin:0;
+  padding: 0;
+}
+html  {
+  font: 14px/1.5 "Microsoft YaHei",Helvetia,"lucida Grande",Verdana,Arial;
+  background: #292929 url(../statics/bg.png) repeat 0 0;
+}
+
+.container {
+  .page-size {
+    min-height: 50vh;
+  }
+
+
+}
+
+.brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .content {
+    text-align: center;
+    h1 {
+      color: white;
+      font-size:4rem;
+      sup {
+        font-size: 1rem;
+      }
+    }
+    p {
+      color: white;
+      font-size: 2rem;
+    }
+  }
+}
+
+.articles {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  .inner {
+   display: inline-block;
+  }
+  .article {
+    a {
+      color: #ababab;
+      text-decoration: none;
+      border-bottom: rgba(0,0,0,0) 1px solid;
+      font-size: 2rem;
+
+      &:before {
+        content: "- ";
+      }
+      &:hover {
+        color: white;
+        border-color: white;
+
+        &:before {
+          color: #ababab;
+        }
+      }
+    }
+  }
+}
