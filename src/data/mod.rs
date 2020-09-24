@@ -134,10 +134,7 @@ impl PageInfo {
             "md" => MarkdownFileData::load(path.to_str().expect("invalid file path encoding"))
                 .map(DataFile::MarkdownFile),
 
-            "json" => {
-                let result = std::fs::read_to_string(path)?;
-                JsonFileData::load(&result).map(DataFile::JsonFile)
-            }
+            "json" => JsonFileData::load(path).map(DataFile::JsonFile),
             _ => unreachable!(),
         }
     }
