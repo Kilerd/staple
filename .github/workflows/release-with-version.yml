@@ -81,6 +81,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+      - name: Install less
+        run: npm install -g less
       - name: Build Homepage
         run: cd homepage && cargo run -- build
       - name: Deploy site to gh-pages branch
