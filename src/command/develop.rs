@@ -1,10 +1,12 @@
 use crate::{
     command::StapleCommand,
+    config::Config,
     error::StapleError,
     server::{ws::WsEvent, Server},
 };
 use notify::{DebouncedEvent as Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{
+    path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -26,25 +28,50 @@ pub(crate) fn develop() -> Result<(), StapleError> {
         let (tx, rx) = std::sync::mpsc::channel();
         let mut result: RecommendedWatcher =
             Watcher::new(tx, Duration::from_secs(2)).expect("cannot watch");
-
+        info!("Watching ./data");
         result
             .watch("data", RecursiveMode::Recursive)
             .expect("cannot watch articles");
+        info!("Watching ./templates");
         result
             .watch("templates", RecursiveMode::Recursive)
             .expect("cannot watch articles");
+        info!("Watching ./Staple.toml");
         result
             .watch("Staple.toml", RecursiveMode::Recursive)
             .expect("cannot watch articles");
+        let exclusive_list: Vec<PathBuf> = Config::load_from_file("./")
+            .expect("cannot load config")
+            .watch
+            .exclusive
+            .into_iter()
+            .map(|p| {
+                info!("Unwatching {}", &p);
+                Path::new(&p).canonicalize().expect("invalid unwatch path")
+            })
+            .collect();
 
         // 有文件事件来的时候就把 `should_update_flag` 设置为 true
         // 循环监听，如果是true 就 build，完成后休眠100ms， build 之前先设置标识为为 false
         loop {
             match rx.recv() {
                 Ok(event) => match &event {
-                    Event::Chmod(_) | Event::Create(_) | Event::Write(_) | Event::Rename(_, _) => {
-                        info!("get an file event, {:?}", event);
-                        file_event_flag_for_watcher.store(true, Ordering::Relaxed);
+                    Event::Chmod(source)
+                    | Event::Create(source)
+                    | Event::Write(source)
+                    | Event::Rename(source, _) => {
+                        let event_path = source
+                            .canonicalize()
+                            .expect("cannot canonicalize event path");
+                        let is_exclusive = exclusive_list
+                            .iter()
+                            .any(|exclusive| event_path.strip_prefix(exclusive).is_ok());
+                        if is_exclusive {
+                            debug!("Get exclusive file event: {:?}", event);
+                        } else {
+                            info!("get an file event, {:?}", event);
+                            file_event_flag_for_watcher.store(true, Ordering::Relaxed);
+                        }
                     }
                     _ => {}
                 },

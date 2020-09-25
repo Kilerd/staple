@@ -16,5 +16,10 @@ before_build = [
     { dir="templates/staple/statics", command="lessc style.less style.css" }
 ]
 
+[watch]
+exclusive = [
+    "templates/staple/statics/style.css",
+]
+
 [extra]
 version = "0.2.0"

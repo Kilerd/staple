@@ -14,6 +14,8 @@ pub struct Config {
     pub statics: Vec<Statics>,
     #[serde(default)]
     pub hook: Hook,
+    #[serde(default)]
+    pub watch: Watch,
     pub extra: HashMap<String, Value>,
 }
 
@@ -59,6 +61,17 @@ impl HookLine {
 impl Display for HookLine {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{}] {}", self.to_dir(), self.to_cmd())
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct Watch {
+    pub exclusive: Vec<String>,
+}
+
+impl Default for Watch {
+    fn default() -> Self {
+        Self { exclusive: vec![] }
     }
 }
 
@@ -115,6 +128,7 @@ impl Default for Config {
                 before_build: vec![],
                 after_build: vec![],
             },
+            watch: Default::default(),
             extra: Default::default(),
         }
     }
