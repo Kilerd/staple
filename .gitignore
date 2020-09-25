@@ -4,3 +4,4 @@
 .idea
 homepage/public/*
 homepage/public
+/homepage/templates/staple/statics/style.css
