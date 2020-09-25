@@ -138,7 +138,8 @@ impl PageInfo {
             _ => unreachable!(),
         }
     }
-
+    ///
+    ///
     pub fn output_file_name(&self) -> String {
         let url = Path::new(&self.url);
         let has_extension = url.extension().is_some();
@@ -161,7 +162,8 @@ impl PageInfo {
 }
 #[cfg(test)]
 mod test {
-    use crate::data::MarkdownContent;
+    use crate::data::{MarkdownContent, PageInfo};
+    use chrono::{FixedOffset, Utc};
 
     #[test]
     fn should_render_ruby_tag() {
@@ -178,6 +180,46 @@ mod test {
         assert_eq!(
             "<p>这是一个<ruby>RUBY带中文<rp>(</rp><rt>中文下标</rt><rp>)</rp></ruby>标签</p>\n",
             content.html
+        );
+    }
+
+    #[test]
+    fn test_page_info_output_file_name() {
+        fn get_page_info_output_file_name(url: &str) -> String {
+            PageInfo {
+                file: "".to_string(),
+                url: url.to_owned(),
+                title: "".to_string(),
+                template: "".to_string(),
+                draw: false,
+                datetime: Utc::now().with_timezone(&FixedOffset::east(60 * 60 * 8)),
+                data: Default::default(),
+                description: None,
+            }
+            .output_file_name()
+        }
+
+        assert_eq!("/index.html", get_page_info_output_file_name("/"));
+        assert_eq!("/rss.xml", get_page_info_output_file_name("/rss.xml"));
+        assert_eq!("/rss.xml", get_page_info_output_file_name("rss.xml"));
+        assert_eq!("/a/index.html", get_page_info_output_file_name("a"));
+        assert_eq!("/a/index.html", get_page_info_output_file_name("/a"));
+        assert_eq!(
+            "/a/b/c/index.html",
+            get_page_info_output_file_name("/a/b/c")
+        );
+        assert_eq!(
+            "/a/b/c/index.html",
+            get_page_info_output_file_name("/a/b/c/")
+        );
+        assert_eq!("/a/b/c.json", get_page_info_output_file_name("/a/b/c.json"));
+        assert_eq!(
+            "/a/b/what.html",
+            get_page_info_output_file_name("/a/b/what.html")
+        );
+        assert_eq!(
+            "/a/b/what.html",
+            get_page_info_output_file_name("a/b/what.html")
         );
     }
 }
