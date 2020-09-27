@@ -41,7 +41,7 @@ jobs:
       - name: Run Code Test
         uses: actions-rs/cargo@v1
         with:
-          command: test -- --test-threads 1
+          command: test -- --test-threads=1
 
       - name: Run code build
         uses: actions-rs/cargo@v1
