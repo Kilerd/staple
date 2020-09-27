@@ -9,7 +9,7 @@ use std::path::Path;
 /// put default template files
 pub(crate) fn init(path: &str) -> Result<(), StapleError> {
     let buf = Path::new(".").join(path);
-    let check_files = vec![STAPLE_CONFIG_FILE, "articles", "templates"];
+    let check_files = vec![STAPLE_CONFIG_FILE, "data", "templates"];
     for path in check_files {
         if buf.join(path).exists() {
             error!(
@@ -46,6 +46,20 @@ mod test {
             let buf = dir.join(point);
             assert!(buf.exists());
         }
+        Ok(())
+    }
+
+    #[test]
+    fn test_exist() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?.into_path();
+        std::env::set_current_dir(&dir)?;
+
+        let buf = dir.join(STAPLE_CONFIG_FILE);
+        std::fs::write(buf, "exist test")?;
+        init("./")?;
+
+        assert!(!dir.join("data").exists());
+
         Ok(())
     }
 }
