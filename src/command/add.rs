@@ -8,15 +8,15 @@ use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub struct AddOptions {
-    title: String,
+    pub title: String,
     #[structopt(long)]
-    url: Option<String>,
+    pub url: Option<String>,
     #[structopt(long, short)]
-    template: Option<String>,
+    pub template: Option<String>,
     #[structopt(long)]
-    draw: bool,
+    pub draw: bool,
     #[structopt(long)]
-    data: bool,
+    pub data: bool,
 }
 
 pub fn add(path: impl AsRef<Path>, options: AddOptions) -> Result<(), StapleError> {

@@ -23,7 +23,13 @@ pub(crate) fn command(path: impl AsRef<Path>) -> Result<(), StapleError> {
 
 #[cfg(test)]
 mod test {
-    use crate::{command::list::command, test::setup};
+    use crate::{
+        command::{
+            add::{add, AddOptions},
+            list::command,
+        },
+        test::setup,
+    };
 
     #[test]
     fn test_list() -> Result<(), Box<dyn std::error::Error>> {
@@ -33,5 +39,30 @@ mod test {
         command(dir)?;
 
         Ok(())
+    }
+
+    #[test]
+    fn should_show_article_list() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = setup();
+        crate::command::init::init(&dir)?;
+        let options = AddOptions {
+            title: "test-one".to_owned(),
+            url: None,
+            template: None,
+            draw: true,
+            data: true,
+        };
+        add(&dir, options)?;
+
+        let options = AddOptions {
+            title: "test-two".to_owned(),
+            url: None,
+            template: None,
+            draw: false,
+            data: false,
+        };
+        add(&dir, options)?;
+
+        Ok(command(dir)?)
     }
 }
