@@ -46,7 +46,7 @@ pub enum StapleCommand {
 
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
-        let path = "./";
+        let path = ".";
         match self {
             StapleCommand::New { path, title, force } => new::new(path, title, force),
             StapleCommand::Init => init::init(&path),

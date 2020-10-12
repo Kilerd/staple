@@ -55,7 +55,8 @@ pub struct Template {
 
 impl Template {
     pub fn new(path: impl AsRef<Path>, name: String) -> Result<Self, StapleError> {
-        let root = path.as_ref().to_str().unwrap();
+        let buf = path.as_ref().canonicalize().expect("cannot canoicalize path");
+        let root = buf.to_str().expect("invalid file path");
         let theme_folder = format!("{}/templates/{}/*", root, name);
         debug!("theme folder is {}", theme_folder);
         let mut tera = Tera::new(&theme_folder)?;
@@ -108,9 +109,9 @@ impl Template {
 
         let data = RenderData::new(full_article, articles, config, &debug_data);
         let context = Context::from_serialize(&data).expect("cannot serialize");
-        let result = self.tera.render(data.page.template(), &context)?;
-        let url = article.output_file_name();
-        let url = &url[1..url.len()];
+        let result = self.tera.render(dbg!(data.page.template()), &context)?;
+        let url = dbg!(article.output_file_name());
+        let url = dbg!(&url[1..url.len()]);
         let output_file = self.working_path.join(RENDER_FOLDER).join(url);
 
         if let Some(p) = output_file.parent() {
