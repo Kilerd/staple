@@ -147,9 +147,12 @@ impl PageInfo {
         let end_with_slash = self.url.ends_with('/');
 
         format!(
-            "{}{}{}",
-            if start_with_slash { "" } else { "/" },
-            &self.url,
+            "{}{}",
+            if start_with_slash {
+                &self.url[1..self.url.len()]
+            } else {
+                &self.url
+            },
             if has_extension {
                 ""
             } else if end_with_slash {
@@ -199,26 +202,23 @@ mod test {
             .output_file_name()
         }
 
-        assert_eq!("/index.html", get_page_info_output_file_name("/"));
-        assert_eq!("/rss.xml", get_page_info_output_file_name("/rss.xml"));
-        assert_eq!("/rss.xml", get_page_info_output_file_name("rss.xml"));
-        assert_eq!("/a/index.html", get_page_info_output_file_name("a"));
-        assert_eq!("/a/index.html", get_page_info_output_file_name("/a"));
+        assert_eq!("index.html", get_page_info_output_file_name("/"));
+        assert_eq!("rss.xml", get_page_info_output_file_name("/rss.xml"));
+        assert_eq!("rss.xml", get_page_info_output_file_name("rss.xml"));
+        assert_eq!("a/index.html", get_page_info_output_file_name("a"));
+        assert_eq!("a/index.html", get_page_info_output_file_name("/a"));
+        assert_eq!("a/b/c/index.html", get_page_info_output_file_name("/a/b/c"));
         assert_eq!(
-            "/a/b/c/index.html",
-            get_page_info_output_file_name("/a/b/c")
-        );
-        assert_eq!(
-            "/a/b/c/index.html",
+            "a/b/c/index.html",
             get_page_info_output_file_name("/a/b/c/")
         );
-        assert_eq!("/a/b/c.json", get_page_info_output_file_name("/a/b/c.json"));
+        assert_eq!("a/b/c.json", get_page_info_output_file_name("/a/b/c.json"));
         assert_eq!(
-            "/a/b/what.html",
+            "a/b/what.html",
             get_page_info_output_file_name("/a/b/what.html")
         );
         assert_eq!(
-            "/a/b/what.html",
+            "a/b/what.html",
             get_page_info_output_file_name("a/b/what.html")
         );
     }
