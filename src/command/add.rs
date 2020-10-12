@@ -1,5 +1,6 @@
 use crate::{
     app::App,
+    command::StapleCommand,
     data::types::{json::JsonFileData, markdown::MarkdownFileData, CreationOptions, FileType},
     error::StapleError,
 };
@@ -20,6 +21,7 @@ pub struct AddOptions {
 }
 
 pub fn add(path: impl AsRef<Path>, options: AddOptions) -> Result<(), StapleError> {
+    StapleCommand::lock_file(&path)?;
     let app = App::load(&path, false)?;
     let url = options.url.clone().unwrap_or_else(|| {
         options

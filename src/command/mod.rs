@@ -74,8 +74,9 @@ impl StapleCommand {
         }
     }
 
-    fn lock_file() -> Result<LockFile, StapleError> {
-        let lock_file = LockFile::new(STAPLE_LOCK_FILE)?;
+    fn lock_file(path: impl AsRef<Path>) -> Result<LockFile, StapleError> {
+        let buf = path.as_ref().join(STAPLE_CONFIG_FILE);
+        let lock_file = LockFile::new(buf)?;
         info!("Preparing to lock file...");
         lock_file.lock_file()?;
         Ok(lock_file)

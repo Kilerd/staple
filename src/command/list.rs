@@ -1,8 +1,9 @@
-use crate::{app::App, error::StapleError};
+use crate::{app::App, command::StapleCommand, error::StapleError};
 use colored::*;
 use std::path::Path;
 
 pub(crate) fn command(path: impl AsRef<Path>) -> Result<(), StapleError> {
+    StapleCommand::lock_file(&path)?;
     let app = App::load(path, false)?;
     info!("Project Name: {}", app.config.site.title);
     let mut pages = app.load_all_data()?;
