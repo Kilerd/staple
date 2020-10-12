@@ -2,9 +2,8 @@ use crate::{app::App, error::StapleError};
 use colored::*;
 use std::path::Path;
 
-pub(crate) fn command() -> Result<(), StapleError> {
-    let path = Path::new("./");
-    let app = App::load(&path, false)?;
+pub(crate) fn command(path: impl AsRef<Path>) -> Result<(), StapleError> {
+    let app = App::load(path, false)?;
     info!("Project Name: {}", app.config.site.title);
     let mut pages = app.load_all_data()?;
     pages.reverse();
@@ -24,15 +23,14 @@ pub(crate) fn command() -> Result<(), StapleError> {
 
 #[cfg(test)]
 mod test {
-    use crate::command::list::command;
+    use crate::{command::list::command, test::setup};
 
     #[test]
     fn test_list() -> Result<(), Box<dyn std::error::Error>> {
-        let dir = tempfile::tempdir()?.into_path();
-        std::env::set_current_dir(&dir)?;
-        crate::command::init::init("./")?;
+        let dir = setup();
+        crate::command::init::init(&dir)?;
 
-        command()?;
+        command(dir)?;
 
         Ok(())
     }

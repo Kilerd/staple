@@ -1,12 +1,12 @@
 use crate::{config::Config, error::StapleError};
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
 use serde::Serialize;
 
 use crate::{
-    constants::{LIVE_RELOAD_CODE, RENDER_FOLDER},
+    constants::{LIVE_RELOAD_CODE, PUBLIC_FOLDER, RENDER_FOLDER},
     data::{DataFile, PageInfo},
 };
 
@@ -48,17 +48,25 @@ impl<'a> RenderData<'a> {
 
 #[derive(Debug)]
 pub struct Template {
+    working_path: PathBuf,
     name: String,
     tera: Tera,
 }
 
 impl Template {
-    pub fn new(name: String) -> Result<Self, StapleError> {
-        let mut tera = Tera::new(&format!("templates/{}/*", name))?;
+    pub fn new(path: impl AsRef<Path>, name: String) -> Result<Self, StapleError> {
+        let root = path.as_ref().to_str().unwrap();
+        let theme_folder = format!("{}/templates/{}/*", root, name);
+        debug!("theme folder is {}", theme_folder);
+        let mut tera = Tera::new(&theme_folder)?;
         tera.register_filter("not_field", crate::util::filter::not_field);
         tera.register_filter("markdown", crate::util::filter::markdown);
         tera.register_function("page_detail", crate::util::filter::page_detail);
-        Ok(Template { name, tera })
+        Ok(Template {
+            working_path: path.as_ref().to_path_buf(),
+            name,
+            tera,
+        })
     }
 
     pub fn render(
@@ -67,8 +75,8 @@ impl Template {
         config: &Config,
         is_develop_mode: bool,
     ) -> Result<(), StapleError> {
-        Template::remove_folder(".render")?;
-        std::fs::create_dir(".render")?;
+        Template::remove_folder(self.working_path.join(RENDER_FOLDER))?;
+        std::fs::create_dir(self.working_path.join(RENDER_FOLDER))?;
 
         // todo can be parallel rendering
         for article in articles.iter() {
@@ -78,8 +86,11 @@ impl Template {
         self.copy_statics_folder(config)?;
         self.copy_statics(config)?;
 
-        Template::remove_folder("public")?;
-        std::fs::rename(".render", "public")?;
+        Template::remove_folder(self.working_path.join(PUBLIC_FOLDER))?;
+        std::fs::rename(
+            self.working_path.join(RENDER_FOLDER),
+            self.working_path.join(PUBLIC_FOLDER),
+        )?;
         Ok(())
     }
 
@@ -100,7 +111,7 @@ impl Template {
         let result = self.tera.render(data.page.template(), &context)?;
         let url = article.output_file_name();
         let url = &url[1..url.len()];
-        let output_file = Path::new(RENDER_FOLDER).join(url);
+        let output_file = self.working_path.join(RENDER_FOLDER).join(url);
 
         if let Some(p) = output_file.parent() {
             if !p.exists() {
@@ -112,30 +123,38 @@ impl Template {
 
     fn copy_statics_folder(&self, config: &Config) -> Result<(), StapleError> {
         info!("copy template static folder");
-        let statics_folder = format!("templates/{}/statics", config.site.theme);
-        if Path::new(&statics_folder).exists() {
+        let statics_folder = self
+            .working_path
+            .join("templates")
+            .join(&config.site.theme)
+            .join("statics");
+        if statics_folder.exists() {
             debug!("statics folder exist, copy to render folder");
-            copy_dir::copy_dir(statics_folder, ".render/statics")?;
+            copy_dir::copy_dir(
+                statics_folder,
+                self.working_path.join(RENDER_FOLDER).join("statics"),
+            )?;
         }
         Ok(())
     }
 
-    pub fn remove_folder(path: &str) -> Result<(), StapleError> {
-        let path1 = Path::new(path);
-        if path1.exists() {
-            debug!("remove folder {}", path);
-            std::fs::remove_dir_all(path1).map_err(StapleError::IoError)
+    pub fn remove_folder(path: impl AsRef<Path>) -> Result<(), StapleError> {
+        let buf = path.as_ref();
+        if buf.exists() {
+            debug!("remove folder {}", buf.to_str().expect("invalid file name"));
+            std::fs::remove_dir_all(buf).map_err(StapleError::IoError)
         } else {
             Ok(())
         }
     }
 
     pub fn copy_statics(&self, config: &Config) -> Result<(), StapleError> {
-        let path1 = Path::new(".render");
+        let render_folder = self.working_path.join(RENDER_FOLDER);
         for statics in &config.statics {
-            let buf = path1.join(&statics.to);
+            let from = self.working_path.join(&statics.from);
+            let to = render_folder.join(&statics.to);
             info!("coping statics from {} to {}", &statics.from, &statics.to);
-            std::fs::copy(&statics.from, buf)?;
+            std::fs::copy(from, to)?;
         }
         Ok(())
     }

@@ -16,7 +16,9 @@ impl App {
     pub fn load(path: impl AsRef<Path>, develop: bool) -> Result<Self, StapleError> {
         let config = Config::load_from_file(&path)?;
         debug!("init template");
-        let template = Template::new(config.get_theme()?)?;
+        let theme = config.get_theme()?;
+        debug!("theme is {}", theme);
+        let template = Template::new(&path, theme)?;
         Ok(Self {
             config,
             template,
@@ -69,9 +71,9 @@ impl App {
     }
 
     pub fn load_all_data(&self) -> Result<Vec<PageInfo>, StapleError> {
-        let path = Path::new("data");
+        let data_path = self.path.join("data");
         let mut articles = vec![];
-        let filter = WalkDir::new(path)
+        let filter = WalkDir::new(data_path)
             .into_iter()
             .flat_map(|e| e.ok())
             .filter(|de| de.path().is_file());

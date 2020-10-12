@@ -104,15 +104,7 @@ impl Config {
     }
 
     pub fn get_theme(&self) -> Result<String, StapleError> {
-        let empty_theme = self.site.theme.eq("");
-        let theme_exist = !Path::new("templates")
-            .join(self.site.theme.clone())
-            .exists();
-        if empty_theme || theme_exist {
-            Err(StapleError::ThemeNotFound(self.site.theme.clone()))
-        } else {
-            Ok(self.site.theme.clone())
-        }
+        Ok(self.site.theme.clone())
     }
     pub fn get_default_file() -> ConfigFile {
         ConfigFile::default()
@@ -184,7 +176,7 @@ mod test {
             "[data] ls",
             HookLine::TargetDir {
                 dir: "data".to_string(),
-                command: "ls".to_string()
+                command: "ls".to_string(),
             }
             .to_string()
         );

@@ -14,9 +14,9 @@ use std::{
     time::Duration,
 };
 
-pub(crate) fn develop() -> Result<(), StapleError> {
-    StapleCommand::check_config_file_exist()?;
-    crate::command::build::build(true)?;
+pub(crate) fn develop(path: impl AsRef<Path>) -> Result<(), StapleError> {
+    StapleCommand::check_config_file_exist(&path)?;
+    crate::command::build::build(&path, true)?;
 
     let has_new_file_event = Arc::new(AtomicBool::new(false));
     let _is_building = Arc::new(AtomicBool::new(false));
@@ -81,13 +81,14 @@ pub(crate) fn develop() -> Result<(), StapleError> {
     });
 
     let file_event_flag_for_builder = has_new_file_event;
+    let buf = path.as_ref().to_path_buf();
     let _handle = std::thread::spawn(move || loop {
         let need_build =
             file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);
         if need_build {
             info!("build app");
             info!("build stage is triggered by file event.");
-            let result1 = crate::command::build::build(true);
+            let result1 = crate::command::build::build(buf.clone(), true);
             match result1 {
                 Ok(_) => info!("build successfully"),
                 Err(e) => error!("fail to build due to {}", e),

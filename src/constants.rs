@@ -12,6 +12,7 @@ pub const STAPLE_CONFIG_FILE: &str = "Staple.toml";
 pub const STAPLE_LOCK_FILE: &str = "Staple.lock";
 
 pub const RENDER_FOLDER: &str = ".render";
+pub const PUBLIC_FOLDER: &str = "public";
 
 pub const DESCRIPTION_SEPARATOR: &str = "<!--more-->";
 

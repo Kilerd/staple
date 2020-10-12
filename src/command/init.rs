@@ -1,4 +1,5 @@
 use crate::{config::Config, constants::STAPLE_CONFIG_FILE, error::StapleError};
+use colored::Colorize;
 use console::style;
 use std::path::Path;
 
@@ -7,8 +8,8 @@ use std::path::Path;
 /// generate `Staple.toml` config file
 /// create folders `articles`, `templates`
 /// put default template files
-pub(crate) fn init(path: &str) -> Result<(), StapleError> {
-    let buf = Path::new(".").join(path);
+pub(crate) fn init(path: impl AsRef<Path>) -> Result<(), StapleError> {
+    let buf = path.as_ref();
     let check_files = vec![STAPLE_CONFIG_FILE, "data", "templates"];
     for path in check_files {
         if buf.join(path).exists() {
@@ -19,28 +20,40 @@ pub(crate) fn init(path: &str) -> Result<(), StapleError> {
             return Ok(());
         }
     }
+    info!("Creating file {}", STAPLE_CONFIG_FILE.blue());
     let config = Config::get_default_file();
     let string = toml::to_string(&config).expect("cannot serialize default config struct");
     std::fs::write(buf.join(STAPLE_CONFIG_FILE), string)?;
+    info!("Creating folder {}", "data".blue());
     std::fs::create_dir(buf.join("data"))?;
+    info!("Creating folder {}", "template".blue());
     std::fs::create_dir(buf.join("templates"))?;
+    info!("Creating template {}", "staple".blue());
     std::fs::create_dir(buf.join("templates").join("staple"))?;
-
-    info!("init");
+    info!("Creating template {}", "staple/article".blue());
+    std::fs::write(
+        buf.join("templates").join("staple").join("article.html"),
+        "{{ page.content.html | safe }}",
+    )?;
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{command::init::init, constants::STAPLE_CONFIG_FILE};
+    use crate::{command::init::init, constants::STAPLE_CONFIG_FILE, test::setup};
 
     #[test]
     fn test_init() -> Result<(), Box<dyn std::error::Error>> {
-        let dir = tempfile::tempdir()?.into_path();
-        std::env::set_current_dir(&dir)?;
-        init("./")?;
+        let dir = setup();
+        init(&dir)?;
 
-        let check_point = vec![STAPLE_CONFIG_FILE, "data", "templates", "templates/staple"];
+        let check_point = vec![
+            STAPLE_CONFIG_FILE,
+            "data",
+            "templates",
+            "templates/staple",
+            "templates/staple/article.html",
+        ];
 
         for point in check_point {
             let buf = dir.join(point);
@@ -51,12 +64,11 @@ mod test {
 
     #[test]
     fn test_exist() -> Result<(), Box<dyn std::error::Error>> {
-        let dir = tempfile::tempdir()?.into_path();
-        std::env::set_current_dir(&dir)?;
+        let dir = setup();
 
         let buf = dir.join(STAPLE_CONFIG_FILE);
         std::fs::write(buf, "exist test")?;
-        init("./")?;
+        init(&dir)?;
 
         assert!(!dir.join("data").exists());
 

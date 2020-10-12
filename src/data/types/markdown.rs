@@ -160,8 +160,11 @@ impl FileType for MarkdownFileData {
         content.push_str(LINE_ENDING);
 
         let file_name = options.title.trim().replace(" ", "-").replace("_", "-");
-        let file_path = format!("data/{}.md", &file_name);
-        std::fs::write(file_path, content)?;
+        let output_path = _file
+            .as_ref()
+            .join("data")
+            .join(format!("{}.md", &file_name));
+        std::fs::write(output_path, content)?;
         Ok(())
     }
 

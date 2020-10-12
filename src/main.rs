@@ -37,3 +37,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use std::path::PathBuf;
+
+    pub fn setup() -> PathBuf {
+        let _ = env_logger::builder().is_test(true).try_init().is_ok();
+        tempfile::tempdir()
+            .expect("Cannot init temp dir")
+            .into_path()
+    }
+}

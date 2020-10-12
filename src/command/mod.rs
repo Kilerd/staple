@@ -5,6 +5,7 @@ use structopt::StructOpt;
 use crate::error::StapleError;
 
 use crate::{
+    command::add::AddOptions,
     constants::{STAPLE_CONFIG_FILE, STAPLE_LOCK_FILE},
     util::lock::LockFile,
 };
@@ -37,17 +38,7 @@ pub enum StapleCommand {
     /// start the develop server listening on local with live-reload
     Develop,
     /// add new article
-    Add {
-        title: String,
-        #[structopt(long)]
-        url: Option<String>,
-        #[structopt(long)]
-        draw: bool,
-        #[structopt(long, short)]
-        template: Option<String>,
-        #[structopt(long)]
-        data: bool,
-    },
+    Add(AddOptions),
 
     /// show all information of staple project
     List,
@@ -55,33 +46,28 @@ pub enum StapleCommand {
 
 impl StapleCommand {
     pub fn run(self) -> Result<(), StapleError> {
+        let path = "./";
         match self {
             StapleCommand::New { path, title, force } => new::new(path, title, force),
-            StapleCommand::Init => init::init("."),
-            StapleCommand::Build => build::build(false),
-            StapleCommand::Develop => develop::develop(),
+            StapleCommand::Init => init::init(&path),
+            StapleCommand::Build => build::build(path, false),
+            StapleCommand::Develop => develop::develop(&path),
             StapleCommand::List => {
-                StapleCommand::check_config_file_exist()?;
-                list::command()
+                StapleCommand::check_config_file_exist(&path)?;
+                list::command(&path)
             }
 
-            StapleCommand::Add {
-                title,
-                url,
-                draw,
-                template,
-                data,
-            } => add::add(title, url, template, draw, data),
+            StapleCommand::Add(options) => add::add(&path, options),
         }
     }
 
     #[inline]
-    fn config_file_exist() -> bool {
-        Path::new(STAPLE_CONFIG_FILE).exists()
+    fn config_file_exist(path: impl AsRef<Path>) -> bool {
+        path.as_ref().join(STAPLE_CONFIG_FILE).exists()
     }
 
-    fn check_config_file_exist() -> Result<(), StapleError> {
-        if StapleCommand::config_file_exist() {
+    fn check_config_file_exist(path: impl AsRef<Path>) -> Result<(), StapleError> {
+        if StapleCommand::config_file_exist(path) {
             Ok(())
         } else {
             Err(StapleError::ConfigNotFound)

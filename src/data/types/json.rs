@@ -86,8 +86,11 @@ impl FileType for JsonFileData {
             .trim()
             .replace(" ", "-")
             .replace("_", "-");
-        let file_path = format!("data/{}.json", &file_name);
-        std::fs::write(file_path, string)?;
+        let output_path = _file
+            .as_ref()
+            .join("data")
+            .join(format!("{}.json", &file_name));
+        std::fs::write(output_path, string)?;
         Ok(())
     }
 

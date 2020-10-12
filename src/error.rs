@@ -14,9 +14,6 @@ pub enum StapleError {
     #[error("render error {}", .0.to_string())]
     RenderError(#[from] tera::Error),
 
-    #[error("theme '{0}' does not exist")]
-    ThemeNotFound(String),
-
     #[error("error on loading article {filename} : {reason}")]
     ArticleError { filename: String, reason: String },
 
