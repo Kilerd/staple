@@ -11,17 +11,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        platform: [macos, windows, ubuntu]
+        platform: [macos, ubuntu]
         include:
           - platform: macos
             target: x86_64-apple-darwin
             os: macos-latest
             bin: staple
-
-          - platform: windows
-            target: x86_64-pc-windows-msvc
-            os: windows-latest
-            bin: staple.exe
 
           - platform: ubuntu
             target: x86_64-unknown-linux-gnu
