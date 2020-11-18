@@ -14,14 +14,14 @@ use std::{
     time::Duration,
 };
 
-pub(crate) fn develop(path: impl AsRef<Path>) -> Result<(), StapleError> {
+pub(crate) fn develop(path: impl AsRef<Path>, port: u16) -> Result<(), StapleError> {
     StapleCommand::check_config_file_exist(&path)?;
     crate::command::build::build(&path, true)?;
 
     let has_new_file_event = Arc::new(AtomicBool::new(false));
     let _is_building = Arc::new(AtomicBool::new(false));
 
-    let (addr, sys) = Server::start();
+    let (addr, sys) = Server::start(port);
 
     let file_event_flag_for_watcher = has_new_file_event.clone();
     let _watcher_thread = std::thread::spawn(move || {
@@ -97,7 +97,10 @@ pub(crate) fn develop(path: impl AsRef<Path>) -> Result<(), StapleError> {
         }
         std::thread::sleep(Duration::from_secs(1));
     });
-    info!("developing server is listening on http://127.0.0.1:8000");
+    info!(
+        "developing server is listening on http://127.0.0.1:{}",
+        port
+    );
     sys.run().expect("");
     Ok(())
 }
