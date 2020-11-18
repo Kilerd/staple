@@ -36,7 +36,11 @@ pub enum StapleCommand {
     /// build
     Build,
     /// start the develop server listening on local with live-reload
-    Develop,
+    Develop {
+        /// port of developing server listens on
+        #[structopt(short, long, default_value = "8000", env = "STAPLE_DEVELOP_PORT")]
+        port: u16,
+    },
     /// add new article
     Add(AddOptions),
 
@@ -51,7 +55,7 @@ impl StapleCommand {
             StapleCommand::New { path, title, force } => new::new(path, title, force),
             StapleCommand::Init => init::init(&path),
             StapleCommand::Build => build::build(path, false),
-            StapleCommand::Develop => develop::develop(&path),
+            StapleCommand::Develop { port } => develop::develop(&path, port),
             StapleCommand::List => {
                 StapleCommand::check_config_file_exist(&path)?;
                 list::command(&path)

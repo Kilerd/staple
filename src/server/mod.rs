@@ -22,7 +22,7 @@ fn ws_index(
 pub struct Server {}
 
 impl Server {
-    pub fn start() -> (Addr<WSServer>, SystemRunner) {
+    pub fn start(port: u16) -> (Addr<WSServer>, SystemRunner) {
         let sys = actix::System::new("staple");
         let server = WSServer {
             listeners: HashSet::new(),
@@ -36,7 +36,7 @@ impl Server {
                 .service(web::resource("/notifier").route(web::get().to(ws_index)))
                 .service(actix_files::Files::new("/", "./public").index_file("index.html"))
         })
-        .bind(("0.0.0.0", 8000))
+        .bind(("0.0.0.0", port))
         .expect("")
         .system_exit()
         .start();
