@@ -60,22 +60,23 @@ pub(crate) fn develop(path: impl AsRef<Path>, port: u16) -> Result<(), StapleErr
                     | Event::Create(source)
                     | Event::Write(source)
                     | Event::Rename(source, _) => {
-                        let event_path = source
-                            .canonicalize()
-                            .expect("cannot canonicalize event path");
-                        let is_exclusive = exclusive_list
-                            .iter()
-                            .any(|exclusive| event_path.strip_prefix(exclusive).is_ok());
-                        if is_exclusive {
-                            debug!("Get exclusive file event: {:?}", event);
+                        if let Ok(event_path) = source.canonicalize() {
+                            let is_exclusive = exclusive_list
+                                .iter()
+                                .any(|exclusive| event_path.strip_prefix(exclusive).is_ok());
+                            if is_exclusive {
+                                debug!("Get exclusive file event: {:?}", event);
+                            } else {
+                                info!("get an file event, {:?}", event);
+                                file_event_flag_for_watcher.store(true, Ordering::Relaxed);
+                            }
                         } else {
-                            info!("get an file event, {:?}", event);
-                            file_event_flag_for_watcher.store(true, Ordering::Relaxed);
+                            warn!("cannot canonicalize event path, skip event");
                         }
                     }
                     _ => {}
                 },
-                Err(e) => info!("watch error: {:?}", e),
+                Err(e) => error!("watch error: {:?}", e),
             }
         }
     });
@@ -86,7 +87,6 @@ pub(crate) fn develop(path: impl AsRef<Path>, port: u16) -> Result<(), StapleErr
         let need_build =
             file_event_flag_for_builder.compare_and_swap(true, false, Ordering::Relaxed);
         if need_build {
-            info!("build app");
             info!("build stage is triggered by file event.");
             let result1 = crate::command::build::build(buf.clone(), true);
             match result1 {
